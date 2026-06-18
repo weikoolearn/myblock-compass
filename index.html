@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyBlock Compass</title>
+  <link rel="stylesheet" href="style.css?v=3">
+</head>
+<body>
+  <div class="app-shell">
+    <nav class="bottom-nav" aria-label="Primary navigation">
+      <button class="nav-item active" data-section="Dashboard">
+        <span class="nav-icon">⌂</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" data-section="To-do List">
+        <span class="nav-icon">✓</span>
+        <span>To-do List</span>
+      </button>
+      <button class="nav-item" data-section="Tax">
+        <span class="nav-icon">$</span>
+        <span>Tax</span>
+      </button>
+      <button class="nav-item" data-section="Message">
+        <span class="nav-icon">✉</span>
+        <span>Message</span>
+      </button>
+      <button class="nav-item" data-section="Document">
+        <span class="nav-icon">□</span>
+        <span>Document</span>
+      </button>
+    </nav>
+
+    <main class="dashboard">
+      <header class="app-header">
+        <div class="brand">
+          <div class="brand-mark">MB</div>
+          <div>
+            <p class="brand-name">MyBlock</p>
+            <p class="brand-subtitle">Compass</p>
+          </div>
+        </div>
+        <div class="header-menu">
+          <button class="rewards-shortcut" id="rewardsShortcut" type="button" aria-label="Open rewards">
+            <span class="rewards-icon">★</span>
+            <span>Rewards</span>
+          </button>
+          <button class="hamburger-button" id="hamburgerButton" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="hamburgerMenu">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
+          <div class="hamburger-menu" id="hamburgerMenu" hidden>
+            <button class="menu-profile menu-item active" type="button" data-menu-section="Account">
+              <span class="avatar">SJ</span>
+              <span class="menu-profile-copy">
+                <span class="menu-profile-label">Account</span>
+                <strong>Sarah Johnson</strong>
+                <span>Married • 2 children • employee</span>
+              </span>
+            </button>
+            <button class="menu-item" type="button" data-menu-section="Filing Path">Filing Path</button>
+            <button class="menu-item" type="button" data-menu-section="Checklist">Checklist</button>
+            <button class="menu-item" type="button" data-menu-section="Document">Document</button>
+            <button class="menu-item" type="button" data-menu-section="Financial">Financial</button>
+            <p class="menu-status" id="menuStatus">Account selected</p>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-view active" id="dashboardPage" data-page="Dashboard">
+      <section class="dashboard-header">
+        <div>
+          <p class="eyebrow" id="dashboardEyebrow">Sarah Johnson's dashboard</p>
+          <h1 id="dashboardWelcome">Welcome Sarah Johnson</h1>
+          <p class="subtitle">Personalized guidance for your financial year</p>
+        </div>
+      </section>
+
+      <div class="dashboard-grid">
+        <section class="primary-content" aria-labelledby="recommendations-title">
+          <section class="filing-progress-card" aria-labelledby="filing-progress-title">
+            <div class="filing-progress-sticky">
+              <div class="filing-progress-header">
+                <div>
+                  <p class="eyebrow">Filing path progress</p>
+                  <h2 id="filing-progress-title">Taxes in Progress</h2>
+                </div>
+                <div class="scenario-toggle" aria-label="Choose filing scenario">
+                  <button class="scenario-button active" type="button" data-scenario="efile">E-file</button>
+                  <button class="scenario-button" type="button" data-scenario="paper">Paper file</button>
+                </div>
+              </div>
+
+              <div class="progress-summary">
+                <div class="progress-topline">
+                  <span id="filingMethod">Filing method: E-file</span>
+                  <strong id="filingProgressPercent">35%</strong>
+                </div>
+                <div class="filing-progress-track" aria-label="Tax filing progress">
+                  <div class="filing-progress-fill" id="filingProgressFill"></div>
+                </div>
+                <p id="filingCurrentStage">Waiting for Documents</p>
+              </div>
+            </div>
+
+            <div class="current-status-card">
+              <div>
+                <span>Current Status</span>
+                <strong id="filingCurrentStatus">Waiting for Documents</strong>
+              </div>
+              <div>
+                <span>Waiting On</span>
+                <strong id="filingWaitingOn">Client</strong>
+              </div>
+              <div>
+                <span>Next Action</span>
+                <strong id="filingNextAction">Review missing documents</strong>
+              </div>
+              <button class="primary-button" id="filingCta" type="button">Upload Document</button>
+              <p class="filing-status-message" id="filingStatusMessage"></p>
+            </div>
+
+            <div class="filing-detail-grid">
+              <section class="filing-detail-section" aria-labelledby="filing-steps-title">
+                <div class="filing-section-header">
+                  <h3 id="filing-steps-title">Filing path steps</h3>
+                  <button class="completed-toggle" id="completedStepsToggle" type="button">Show completed</button>
+                </div>
+                <ol class="filing-stepper" id="filingSteps"></ol>
+              </section>
+
+              <section class="filing-detail-section" aria-labelledby="document-checklist-title">
+                <div class="document-summary-card">
+                  <div>
+                    <h3 id="document-checklist-title">Document Checklist</h3>
+                    <p id="documentReceivedSummary">3 of 5 documents received</p>
+                    <p id="documentMissingSummary">2 documents missing</p>
+                  </div>
+                  <button class="primary-button compact-button" id="viewDocumentsCta" type="button">View Documents</button>
+                </div>
+              </section>
+            </div>
+          </section>
+
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Personalized recommendations</p>
+              <h2 id="recommendations-title">Top opportunities for your family</h2>
+            </div>
+            <span class="freshness">Updated today</span>
+          </div>
+
+          <section class="recommendation-carousel" aria-label="Personalized recommendation carousel">
+            <article class="carousel-banner" id="recommendationBanner">
+              <div class="carousel-copy">
+                <div class="card-topline">
+                  <span class="priority-label" id="recommendationPriority">High priority</span>
+                  <span class="points" id="recommendationPoints">+75 pts</span>
+                </div>
+                <p class="recommendation-kicker" id="recommendationKicker">Most relevant next step</p>
+                <h3 id="recommendationTitle">529 Education Savings Guidance</h3>
+                <p id="recommendationDescription">Explore whether a state-sponsored education savings plan could help you prepare for future school costs while keeping tax benefits in view.</p>
+                <button class="primary-button" id="recommendationCta" type="button">Learn about 529 plans</button>
+              </div>
+              <div class="carousel-context" aria-hidden="true">
+                <span id="recommendationIndex">1 of 3</span>
+                <strong>Guided advice</strong>
+                <small>One timely recommendation at a time</small>
+              </div>
+              <div class="carousel-progress" id="recommendationProgress" aria-label="Choose a recommendation"></div>
+            </article>
+          </section>
+
+          <section class="action-plan" aria-labelledby="action-plan-title">
+            <div class="section-heading compact">
+              <div>
+                <p class="eyebrow">Action plan</p>
+                <h2 id="action-plan-title">Recommended next actions</h2>
+              </div>
+            </div>
+
+            <div class="action-list">
+              <button class="action-item reward-action" data-points="25" data-message="Action complete: Learn more about 529 plans. 25 points added.">
+                <span class="action-number">1</span>
+                <span>
+                  <strong>Learn more about 529 plans</strong>
+                  <small>Five-minute guide tailored for parents with school-age kids.</small>
+                </span>
+              </button>
+              <button class="action-item reward-action" data-points="30" data-message="Action complete: Schedule a mid-year tax checkup. 30 points added.">
+                <span class="action-number">2</span>
+                <span>
+                  <strong>Schedule a mid-year tax checkup</strong>
+                  <small>Pick a time with an H&R Block tax pro.</small>
+                </span>
+              </button>
+              <button class="action-item reward-action" data-points="20" data-message="Action complete: Review childcare FSA options. 20 points added.">
+                <span class="action-number">3</span>
+                <span>
+                  <strong>Review childcare FSA options</strong>
+                  <small>Understand what to ask before benefits enrollment.</small>
+                </span>
+              </button>
+            </div>
+          </section>
+        </section>
+
+        <aside class="insight-column" aria-label="Insights and rewards">
+          <section class="rewards-card">
+            <p class="eyebrow">Rewards summary</p>
+            <div class="points-total">
+              <span id="pointsEarned">420</span>
+              <small>points earned</small>
+            </div>
+            <div class="reward-detail">
+              <span>Current level</span>
+              <strong>Family Planner</strong>
+            </div>
+            <div class="progress-track" aria-label="Progress to next milestone">
+              <div id="rewardProgress" class="progress-fill"></div>
+            </div>
+            <p id="milestoneText" class="milestone">80 points to Tax Season Ready</p>
+          </section>
+
+          <section class="questions-card">
+            <p class="eyebrow">Sarah's key questions</p>
+            <h2>Simple answers first</h2>
+
+            <div class="question-block">
+              <h3>Is this important for me?</h3>
+              <p>Yes. These recommendations connect to Sarah's children, income, and likely yearly tax decisions.</p>
+            </div>
+
+            <div class="question-block">
+              <h3>Do I need to do anything?</h3>
+              <p>Start with one action this week: education savings, withholding, or childcare benefits.</p>
+            </div>
+
+            <div class="question-block">
+              <h3>Who can help me?</h3>
+              <p>An H&R Block tax pro can explain the tradeoffs and help Sarah choose the next step.</p>
+            </div>
+          </section>
+
+          <section class="advisor-card">
+            <p class="advisor-label">Available now</p>
+            <h2>Talk to a tax pro</h2>
+            <p>Get a simple answer before small questions become tax-season surprises.</p>
+            <button class="secondary-button">Find help</button>
+          </section>
+        </aside>
+      </div>
+      </div>
+
+      <section class="page-view document-page" id="documentPage" data-page="Document" hidden aria-labelledby="documents-title">
+        <div class="page-title-row">
+          <div>
+            <p class="eyebrow">Document center</p>
+            <h1 id="documents-title">Required Documents</h1>
+            <p class="subtitle">Upload missing tax documents and track what has been received.</p>
+          </div>
+          <div class="document-count-card">
+            <strong id="documentPageReceivedSummary">3 of 5</strong>
+            <span>received</span>
+          </div>
+        </div>
+
+        <div class="required-documents-card">
+          <div class="required-documents-header">
+            <h2>Required Documents</h2>
+            <span id="documentPageMissingSummary">2 missing</span>
+          </div>
+          <ul class="required-document-list" id="requiredDocumentList"></ul>
+        </div>
+      </section>
+    </main>
+
+    <dialog class="upload-modal" id="uploadModal" aria-labelledby="upload-modal-title">
+      <form method="dialog" class="upload-dialog">
+        <div>
+          <p class="eyebrow">Upload document</p>
+          <h2 id="upload-modal-title">Upload 1095-A</h2>
+          <p id="uploadModalDescription">Choose a file to mark this document as received.</p>
+        </div>
+        <label class="file-picker">
+          <span>Choose file</span>
+          <input id="documentFileInput" type="file">
+        </label>
+        <p class="selected-file" id="selectedFileName">No file selected</p>
+        <div class="modal-actions">
+          <button class="secondary-button" id="cancelUpload" type="button">Cancel</button>
+          <button class="primary-button" id="confirmUpload" type="button" disabled>Upload</button>
+        </div>
+      </form>
+    </dialog>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
