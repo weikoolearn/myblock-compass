@@ -6,13 +6,41 @@ const activeUserProfile = {
   displayName: "Sarah Johnson"
 };
 
-const requiredDocuments = [
-  { name: "W-2", status: "received" },
-  { name: "Driver License", status: "received" },
-  { name: "1095-A", status: "missing" },
-  { name: "1099-INT", status: "missing" },
-  { name: "Prior-year Return", status: "received" }
-];
+const recentDocumentYears = [2025, 2024, 2023, 2022];
+const olderDocumentYears = [2021, 2020, 2019, 2018, 2017, 2016];
+let documentYears = [...recentDocumentYears];
+const requiredDocumentsByYear = {
+  2025: [
+    { name: "W-2", status: "received" }, { name: "Driver License", status: "received" },
+    { name: "1095-A", status: "missing" }, { name: "1099-INT", status: "missing" },
+    { name: "Prior-Year Return", status: "received" }
+  ],
+  2024: [
+    { name: "W-2", status: "received" }, { name: "Driver License", status: "received" },
+    { name: "1095-A", status: "received" }, { name: "1099-INT", status: "missing" },
+    { name: "Prior-Year Return", status: "received" }
+  ],
+  2023: [
+    { name: "W-2", status: "received" }, { name: "Driver License", status: "missing" },
+    { name: "1095-A", status: "received" }, { name: "1099-INT", status: "received" },
+    { name: "Prior-Year Return", status: "received" }
+  ],
+  2022: [
+    { name: "W-2", status: "received" }, { name: "Driver License", status: "received" },
+    { name: "1095-A", status: "received" }, { name: "1099-INT", status: "received" },
+    { name: "Prior-Year Return", status: "received" }
+  ]
+};
+olderDocumentYears.forEach((year, index) => {
+  requiredDocumentsByYear[year] = [
+    { name: "W-2", status: "received" },
+    { name: "Driver License", status: "received" },
+    { name: "1095-A", status: index % 3 === 0 ? "missing" : "received" },
+    { name: "1099-INT", status: "received" },
+    { name: "Prior-Year Return", status: "received" }
+  ];
+});
+const historicalFiles = ["Federal Return.pdf", "State Return.pdf", "Signed 8879.pdf", "W-2.pdf", "1099-INT.pdf"];
 
 const filingScenarios = {
   efile: {
@@ -116,6 +144,8 @@ let rotationStartedAt = 0;
 let elapsedBeforePause = 0;
 let isCarouselPaused = false;
 let pendingUploadDocument = null;
+let activeDocumentMode = "upload";
+let activeDocumentYear = 2025;
 
 const navItems = document.querySelectorAll(".nav-item");
 const pageViews = document.querySelectorAll(".page-view");
@@ -126,7 +156,9 @@ const menuItems = document.querySelectorAll(".menu-item");
 const menuStatus = document.querySelector("#menuStatus");
 const dashboardEyebrow = document.querySelector("#dashboardEyebrow");
 const dashboardWelcome = document.querySelector("#dashboardWelcome");
-const scenarioButtons = document.querySelectorAll(".scenario-button");
+const taxTipsShortcut = document.querySelector("#taxTipsShortcut");
+const personalizedRecommendations = document.querySelector("#personalizedRecommendations");
+const scenarioButtons = document.querySelectorAll("[data-scenario]");
 const filingMethod = document.querySelector("#filingMethod");
 const filingProgressPercent = document.querySelector("#filingProgressPercent");
 const filingProgressFill = document.querySelector("#filingProgressFill");
@@ -141,9 +173,13 @@ const filingSteps = document.querySelector("#filingSteps");
 const documentReceivedSummary = document.querySelector("#documentReceivedSummary");
 const documentMissingSummary = document.querySelector("#documentMissingSummary");
 const viewDocumentsCta = document.querySelector("#viewDocumentsCta");
-const documentPageReceivedSummary = document.querySelector("#documentPageReceivedSummary");
 const documentPageMissingSummary = document.querySelector("#documentPageMissingSummary");
 const requiredDocumentList = document.querySelector("#requiredDocumentList");
+const documentModeButtons = document.querySelectorAll("[data-document-mode]");
+const uploadDocumentsPanel = document.querySelector("#uploadDocumentsPanel");
+const browseDocumentsPanel = document.querySelector("#browseDocumentsPanel");
+const taxYearToggle = document.querySelector("#taxYearToggle");
+const documentHistory = document.querySelector("#documentHistory");
 const uploadModal = document.querySelector("#uploadModal");
 const uploadModalTitle = document.querySelector("#upload-modal-title");
 const uploadModalDescription = document.querySelector("#uploadModalDescription");
@@ -183,28 +219,28 @@ function updateDashboardHeader() {
   dashboardWelcome.textContent = `Welcome ${activeUserProfile.displayName}`;
 }
 
-function getDocumentCounts() {
-  const received = requiredDocuments.filter((documentItem) => documentItem.status === "received").length;
-  const total = requiredDocuments.length;
+function getDocumentCounts(documents = requiredDocumentsByYear[activeDocumentYear]) {
+  const received = documents.filter((documentItem) => documentItem.status === "received").length;
+  const total = documents.length;
   const missing = total - received;
 
   return { received, total, missing };
 }
 
 function renderDocumentSummary() {
-  const { received, total, missing } = getDocumentCounts();
+  const currentYearCounts = getDocumentCounts(requiredDocumentsByYear[documentYears[0]]);
+  const { missing } = getDocumentCounts();
   const missingLabel = missing === 1 ? "document missing" : "documents missing";
 
-  documentReceivedSummary.textContent = `${received} of ${total} documents received`;
-  documentMissingSummary.textContent = `${missing} ${missingLabel}`;
-  documentPageReceivedSummary.textContent = `${received} of ${total}`;
+  documentReceivedSummary.textContent = `${currentYearCounts.received} of ${currentYearCounts.total} documents received`;
+  documentMissingSummary.textContent = `${currentYearCounts.missing} ${currentYearCounts.missing === 1 ? "document missing" : "documents missing"}`;
   documentPageMissingSummary.textContent = `${missing} missing`;
 }
 
 function renderRequiredDocuments() {
   requiredDocumentList.innerHTML = "";
 
-  requiredDocuments.forEach((documentItem) => {
+  requiredDocumentsByYear[activeDocumentYear].forEach((documentItem) => {
     const item = document.createElement("li");
     item.className = `required-document-item ${documentItem.status}`;
 
@@ -217,15 +253,14 @@ function renderRequiredDocuments() {
 
     item.append(name, status);
 
-    if (documentItem.status === "missing") {
-      const uploadButton = document.createElement("button");
-      uploadButton.className = "upload-button";
-      uploadButton.type = "button";
-      uploadButton.textContent = "Upload";
-      uploadButton.setAttribute("aria-label", `Upload ${documentItem.name}`);
-      uploadButton.addEventListener("click", () => openUploadModal(documentItem));
-      item.appendChild(uploadButton);
-    }
+    const actionButton = document.createElement("button");
+    actionButton.className = "upload-button";
+    actionButton.type = "button";
+    actionButton.textContent = documentItem.status === "missing" ? "Upload" : "View";
+    actionButton.setAttribute("aria-label", `${actionButton.textContent} ${documentItem.name}`);
+    if (documentItem.status === "missing") actionButton.addEventListener("click", () => openUploadModal(documentItem));
+    else actionButton.addEventListener("click", () => showPrototypeMessage(actionButton, "Viewed"));
+    item.appendChild(actionButton);
 
     requiredDocumentList.appendChild(item);
   });
@@ -234,6 +269,90 @@ function renderRequiredDocuments() {
 function renderDocuments() {
   renderDocumentSummary();
   renderRequiredDocuments();
+  renderTaxYears();
+  renderDocumentHistory();
+}
+
+function renderTaxYears() {
+  taxYearToggle.innerHTML = "";
+  documentYears.forEach((year) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = year;
+    button.classList.toggle("active", year === activeDocumentYear);
+    button.setAttribute("aria-pressed", year === activeDocumentYear);
+    button.addEventListener("click", () => {
+      activeDocumentYear = year;
+      if (recentDocumentYears.includes(year)) documentYears = [...recentDocumentYears];
+      renderDocuments();
+    });
+    taxYearToggle.appendChild(button);
+  });
+
+  const moreButton = document.createElement("button");
+  moreButton.type = "button";
+  moreButton.className = "more-years-button";
+  moreButton.textContent = "More ▼";
+  moreButton.setAttribute("aria-haspopup", "menu");
+  moreButton.setAttribute("aria-expanded", "false");
+
+  const menu = document.createElement("div");
+  menu.className = "more-years-menu";
+  menu.setAttribute("role", "menu");
+  menu.hidden = true;
+
+  olderDocumentYears.forEach((year) => {
+    const option = document.createElement("button");
+    option.type = "button";
+    option.textContent = year;
+    option.setAttribute("role", "menuitem");
+    option.classList.toggle("active", year === activeDocumentYear);
+    option.addEventListener("click", (event) => {
+      event.stopPropagation();
+      activeDocumentYear = year;
+      documentYears = [...recentDocumentYears.slice(0, 3), year];
+      renderDocuments();
+    });
+    menu.appendChild(option);
+  });
+
+  moreButton.addEventListener("click", (event) => {
+    event.stopPropagation();
+    menu.hidden = !menu.hidden;
+    moreButton.setAttribute("aria-expanded", !menu.hidden);
+  });
+  taxYearToggle.append(moreButton, menu);
+}
+
+function renderDocumentHistory() {
+  documentHistory.innerHTML = "";
+  documentYears.forEach((year) => {
+    const details = document.createElement("details");
+    details.className = "history-year-card";
+    const summary = document.createElement("summary");
+    summary.innerHTML = `<strong>${year}</strong><span>View documents</span>`;
+    const list = document.createElement("ul");
+    list.className = "history-file-list";
+    historicalFiles.forEach((file) => {
+      const item = document.createElement("li");
+      item.innerHTML = `<span>${file}</span>`;
+      const actions = document.createElement("div");
+      ["View", "Download"].forEach((label) => {
+        const button = document.createElement("button");
+        button.type = "button"; button.className = "file-action"; button.textContent = label;
+        button.addEventListener("click", () => showPrototypeMessage(button, label === "View" ? "Viewed" : "Downloaded"));
+        actions.appendChild(button);
+      });
+      item.appendChild(actions); list.appendChild(item);
+    });
+    details.append(summary, list); documentHistory.appendChild(details);
+  });
+}
+
+function showPrototypeMessage(button, label) {
+  const original = button.textContent;
+  button.textContent = label;
+  window.setTimeout(() => { button.textContent = original; }, 1200);
 }
 
 function renderFilingScenario() {
@@ -475,10 +594,27 @@ navItems.forEach((item) => {
   });
 });
 
+taxTipsShortcut.addEventListener("click", () => {
+  personalizedRecommendations.scrollIntoView({ behavior: "smooth", block: "start" });
+});
+
 scenarioButtons.forEach((button) => {
   button.addEventListener("click", () => {
     activeFilingScenario = button.dataset.scenario;
     renderFilingScenario();
+  });
+});
+
+documentModeButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    activeDocumentMode = button.dataset.documentMode;
+    documentModeButtons.forEach((modeButton) => {
+      const active = modeButton.dataset.documentMode === activeDocumentMode;
+      modeButton.classList.toggle("active", active);
+      modeButton.setAttribute("aria-pressed", active);
+    });
+    uploadDocumentsPanel.hidden = activeDocumentMode !== "upload";
+    browseDocumentsPanel.hidden = activeDocumentMode !== "browse";
   });
 });
 
@@ -514,6 +650,10 @@ menuItems.forEach((item) => {
 
 document.addEventListener("click", () => {
   closeMenu();
+  const moreYearsMenu = document.querySelector(".more-years-menu");
+  const moreYearsButton = document.querySelector(".more-years-button");
+  if (moreYearsMenu) moreYearsMenu.hidden = true;
+  if (moreYearsButton) moreYearsButton.setAttribute("aria-expanded", "false");
 });
 
 document.addEventListener("keydown", (event) => {

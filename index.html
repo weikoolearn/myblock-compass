@@ -74,6 +74,9 @@
           <p class="eyebrow" id="dashboardEyebrow">Sarah Johnson's dashboard</p>
           <h1 id="dashboardWelcome">Welcome Sarah Johnson</h1>
           <p class="subtitle">Personalized guidance for your financial year</p>
+          <button class="tax-tips-shortcut" id="taxTipsShortcut" type="button" aria-controls="personalizedRecommendations">
+            Tax Tips
+          </button>
         </div>
       </section>
 
@@ -143,7 +146,7 @@
             </div>
           </section>
 
-          <div class="section-heading">
+          <div class="section-heading" id="personalizedRecommendations">
             <div>
               <p class="eyebrow">Personalized recommendations</p>
               <h2 id="recommendations-title">Top opportunities for your family</h2>
@@ -254,25 +257,38 @@
       </div>
 
       <section class="page-view document-page" id="documentPage" data-page="Document" hidden aria-labelledby="documents-title">
-        <div class="page-title-row">
-          <div>
-            <p class="eyebrow">Document center</p>
-            <h1 id="documents-title">Required Documents</h1>
-            <p class="subtitle">Upload missing tax documents and track what has been received.</p>
-          </div>
-          <div class="document-count-card">
-            <strong id="documentPageReceivedSummary">3 of 5</strong>
-            <span>received</span>
+        <div class="document-center-header">
+          <h1 id="documents-title">Document Center</h1>
+          <div class="scenario-toggle document-mode-toggle" aria-label="Choose document mode">
+            <button class="scenario-button active" type="button" data-document-mode="upload" aria-pressed="true">Upload</button>
+            <button class="scenario-button" type="button" data-document-mode="browse" aria-pressed="false">Browse</button>
           </div>
         </div>
 
-        <div class="required-documents-card">
-          <div class="required-documents-header">
-            <h2>Required Documents</h2>
-            <span id="documentPageMissingSummary">2 missing</span>
+        <section id="uploadDocumentsPanel" aria-labelledby="upload-documents-title">
+          <div class="document-mode-heading">
+            <h2 id="upload-documents-title">Required Documents</h2>
+            <p class="subtitle">Upload missing tax documents and track what has been received.</p>
           </div>
-          <ul class="required-document-list" id="requiredDocumentList"></ul>
-        </div>
+
+          <div class="tax-year-toggle" id="taxYearToggle" aria-label="Select tax year"></div>
+
+          <div class="required-documents-card">
+            <div class="required-documents-header">
+              <h2>Required Documents</h2>
+              <span id="documentPageMissingSummary">2 missing</span>
+            </div>
+            <ul class="required-document-list" id="requiredDocumentList"></ul>
+          </div>
+        </section>
+
+        <section id="browseDocumentsPanel" hidden aria-labelledby="browse-documents-title">
+          <div class="document-mode-heading">
+            <h2 id="browse-documents-title">Document History</h2>
+            <p class="subtitle">View tax documents and records from previous years.</p>
+          </div>
+          <div class="document-history" id="documentHistory"></div>
+        </section>
       </section>
     </main>
 
