@@ -644,6 +644,142 @@ h1 {
   gap: 16px;
 }
 
+.checklist-dashboard {
+  padding-bottom: calc(var(--bottom-nav-height) + 34px);
+}
+
+.checklist-page,
+.checklist-form,
+.checklist-selection-list {
+  display: grid;
+  gap: 16px;
+}
+
+.checklist-selection-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.checklist-flow-card {
+  overflow: hidden;
+}
+
+.checklist-helper {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.checklist-helper:empty,
+.subtitle:empty,
+.required-documents-header h2:empty,
+.required-documents-header span:empty {
+  display: none;
+}
+
+.checklist-count-card strong {
+  white-space: nowrap;
+}
+
+.checklist-choice-item,
+.task-checklist-item,
+.checklist-empty-state {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfcfd;
+}
+
+.checklist-choice-label,
+.task-checklist-item {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 12px;
+  align-items: start;
+  padding: 14px;
+}
+
+.checklist-choice-label {
+  cursor: pointer;
+}
+
+.checklist-checkbox {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  accent-color: var(--green);
+}
+
+.checklist-choice-copy,
+.task-checklist-copy {
+  display: grid;
+  gap: 6px;
+}
+
+.checklist-choice-copy strong,
+.task-checklist-copy strong {
+  font-size: 16px;
+  line-height: 1.35;
+}
+
+.checklist-choice-copy span {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.task-context {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.task-link,
+.checklist-back-link {
+  color: var(--green-dark);
+  font-weight: 800;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.task-link:hover,
+.checklist-back-link:hover {
+  color: var(--green);
+}
+
+.checklist-home-link {
+  color: #39475d;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  font-weight: 800;
+  font-size: 14px;
+  line-height: 1.1;
+}
+
+.checklist-home-link:hover {
+  color: var(--green-dark);
+}
+
+.checklist-actions {
+  display: grid;
+  gap: 10px;
+}
+
+.checklist-actions .primary-button,
+.checklist-actions .secondary-button {
+  margin: 0;
+}
+
+.checklist-empty-state {
+  padding: 18px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .required-documents-header {
   display: flex;
   align-items: center;
@@ -1241,6 +1377,20 @@ h1 {
   .page-title-row {
     grid-template-columns: minmax(0, 1fr) 180px;
     align-items: end;
+  }
+
+  .checklist-actions {
+    grid-template-columns: 180px minmax(0, 1fr);
+    justify-content: end;
+  }
+
+  .checklist-actions .primary-button {
+    max-width: 240px;
+    justify-self: end;
+  }
+
+  .task-checklist-item {
+    grid-template-columns: 24px minmax(0, 1fr);
   }
 
   .required-document-item {
