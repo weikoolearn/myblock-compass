@@ -267,6 +267,23 @@ p {
   margin-bottom: 22px;
 }
 
+.tax-tips-shortcut {
+  min-height: 44px;
+  margin-top: 14px;
+  padding: 10px 16px;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  background: #ffffff;
+  color: var(--green-dark);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.tax-tips-shortcut:hover,
+.tax-tips-shortcut:focus-visible {
+  background: var(--green-soft);
+}
+
 .eyebrow {
   color: var(--green-dark);
   font-size: 12px;
@@ -606,6 +623,82 @@ h1 {
   gap: 16px;
   margin-bottom: 20px;
 }
+
+.document-center-header,
+.document-mode-heading {
+  display: grid;
+  gap: 8px;
+}
+
+.document-center-header { gap: 18px; margin-bottom: 28px; }
+.document-center-header h1,
+.document-mode-heading h2 { margin: 0; }
+.document-mode-toggle { width: 100%; }
+.document-mode-toggle .scenario-button { min-height: 50px; font-size: 15px; }
+.document-mode-heading { margin-bottom: 18px; }
+
+.tax-year-toggle {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  position: relative;
+  padding: 4px;
+  margin-bottom: 20px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #eef2f0;
+}
+
+.tax-year-toggle button {
+  min-height: 44px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-weight: 800;
+}
+
+.tax-year-toggle .more-years-button {
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.more-years-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(240px, 76vw);
+  padding: 8px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(23, 43, 36, .18);
+}
+
+.more-years-menu:not([hidden]) { display: grid; }
+.more-years-menu button { min-height: 46px; border: 1px solid transparent; }
+.more-years-menu button:hover,
+.more-years-menu button.active { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); }
+
+.tax-year-toggle button.active { background: #fff; color: var(--green-dark); box-shadow: 0 1px 4px rgba(23, 43, 36, .14); }
+
+.document-history { display: grid; gap: 12px; }
+.history-year-card { overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); box-shadow: var(--shadow); }
+.history-year-card summary { min-height: 66px; padding: 16px; display: flex; align-items: center; justify-content: space-between; gap: 12px; cursor: pointer; list-style: none; }
+.history-year-card summary::-webkit-details-marker { display: none; }
+.history-year-card summary strong { font-size: 21px; }
+.history-year-card summary span { color: var(--green-dark); font-size: 13px; font-weight: 800; }
+.history-year-card[open] summary { border-bottom: 1px solid var(--line); }
+.history-file-list { margin: 0; padding: 8px 16px; list-style: none; }
+.history-file-list li { padding: 12px 0; display: grid; gap: 10px; border-bottom: 1px solid var(--line); }
+.history-file-list li:last-child { border-bottom: 0; }
+.history-file-list li > span { font-weight: 700; }
+.history-file-list li > div { display: flex; gap: 8px; }
+.file-action { min-height: 36px; padding: 7px 12px; border: 1px solid var(--green); border-radius: 8px; background: #fff; color: var(--green-dark); cursor: pointer; font-weight: 800; }
+.file-action:hover { background: var(--green-soft); }
 
 .page-title-row h1 {
   margin: 6px 0;
@@ -1392,6 +1485,10 @@ h1 {
   .task-checklist-item {
     grid-template-columns: 24px minmax(0, 1fr);
   }
+
+  .document-center-header { grid-template-columns: minmax(0, 1fr) 320px; align-items: center; }
+  .tax-year-toggle { max-width: 480px; }
+  .history-file-list li { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
 
   .required-document-item {
     grid-template-columns: minmax(0, 1fr) 110px 96px;
