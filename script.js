@@ -641,6 +641,11 @@ rewardsShortcut.addEventListener("click", (event) => {
 
 menuItems.forEach((item) => {
   item.addEventListener("click", () => {
+    if (item.dataset.menuSection === "Checklist") {
+      window.location.href = "checklist.html";
+      return;
+    }
+
     menuItems.forEach((menuItem) => menuItem.classList.remove("active"));
     item.classList.add("active");
     menuStatus.textContent = `${item.dataset.menuSection} selected`;
