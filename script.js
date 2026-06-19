@@ -1,6 +1,8 @@
 const STARTING_POINTS = 420;
 const NEXT_MILESTONE = 500;
 const ROTATION_INTERVAL = 10000;
+const TODO_LIST_STORAGE_KEY = "myblockTodoItems";
+const CHECKLIST_STORAGE_KEY = "myblockChecklistState";
 
 const activeUserProfile = {
   displayName: "Sarah Johnson"
@@ -146,6 +148,7 @@ let isCarouselPaused = false;
 let pendingUploadDocument = null;
 let activeDocumentMode = "upload";
 let activeDocumentYear = 2025;
+let pendingTodoRemoval = null;
 
 const navItems = document.querySelectorAll(".nav-item");
 const pageViews = document.querySelectorAll(".page-view");
@@ -175,6 +178,9 @@ const documentMissingSummary = document.querySelector("#documentMissingSummary")
 const viewDocumentsCta = document.querySelector("#viewDocumentsCta");
 const documentPageMissingSummary = document.querySelector("#documentPageMissingSummary");
 const requiredDocumentList = document.querySelector("#requiredDocumentList");
+const todoProgressSummary = document.querySelector("#todoProgressSummary");
+const todoRemainingSummary = document.querySelector("#todoRemainingSummary");
+const todoListItems = document.querySelector("#todoListItems");
 const documentModeButtons = document.querySelectorAll("[data-document-mode]");
 const uploadDocumentsPanel = document.querySelector("#uploadDocumentsPanel");
 const browseDocumentsPanel = document.querySelector("#browseDocumentsPanel");
@@ -187,6 +193,10 @@ const documentFileInput = document.querySelector("#documentFileInput");
 const selectedFileName = document.querySelector("#selectedFileName");
 const cancelUpload = document.querySelector("#cancelUpload");
 const confirmUpload = document.querySelector("#confirmUpload");
+const taskConfirmationModal = document.querySelector("#taskConfirmationModal");
+const taskConfirmationDescription = document.querySelector("#taskConfirmationDescription");
+const cancelTaskCompletionButton = document.querySelector("#cancelTaskCompletionButton");
+const confirmTaskCompletionButton = document.querySelector("#confirmTaskCompletionButton");
 const pointsEarned = document.querySelector("#pointsEarned");
 const rewardProgress = document.querySelector("#rewardProgress");
 const milestoneText = document.querySelector("#milestoneText");
@@ -353,6 +363,116 @@ function showPrototypeMessage(button, label) {
   const original = button.textContent;
   button.textContent = label;
   window.setTimeout(() => { button.textContent = original; }, 1200);
+}
+
+function loadSavedTodoItems() {
+  try {
+    const savedItems = JSON.parse(localStorage.getItem(TODO_LIST_STORAGE_KEY));
+    return Array.isArray(savedItems) ? savedItems : [];
+  } catch (error) {
+    localStorage.removeItem(TODO_LIST_STORAGE_KEY);
+    return [];
+  }
+}
+
+function saveTodoItems(todoItems) {
+  localStorage.setItem(TODO_LIST_STORAGE_KEY, JSON.stringify(todoItems));
+}
+
+function syncChecklistSelections(todoItems) {
+  try {
+    const checklistState = JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY));
+
+    if (!checklistState || !Array.isArray(checklistState.selectedItems) || !Array.isArray(checklistState.completedItems)) {
+      return;
+    }
+
+    checklistState.selectedItems = todoItems.map((item) => item.id);
+    checklistState.completedItems = [];
+    checklistState.mode = "selection";
+
+    localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checklistState));
+  } catch (error) {
+    localStorage.removeItem(CHECKLIST_STORAGE_KEY);
+  }
+}
+
+function updateTodoSummary(todoItems) {
+  const totalTasks = todoItems.length;
+  const completedTasks = todoItems.filter((item) => item.completed).length;
+  const remainingTasks = Math.max(totalTasks - completedTasks, 0);
+
+  todoProgressSummary.textContent = `${completedTasks} of ${totalTasks}`;
+  todoRemainingSummary.textContent = remainingTasks === 1 ? "1 remaining" : `${remainingTasks} remaining`;
+}
+
+function renderTodoList() {
+  const todoItems = loadSavedTodoItems();
+  todoListItems.innerHTML = "";
+
+  if (todoItems.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "checklist-empty-state";
+    emptyItem.textContent = "No saved checklist tasks yet. Save changes from the Checklist page to add tasks here.";
+    todoListItems.appendChild(emptyItem);
+    updateTodoSummary(todoItems);
+    return;
+  }
+
+  todoItems.forEach((item, index) => {
+    const listItem = document.createElement("li");
+    listItem.className = "task-checklist-item";
+
+    const checkbox = document.createElement("input");
+    checkbox.className = "checklist-checkbox";
+    checkbox.type = "checkbox";
+    checkbox.id = `todo-item-${index}`;
+    checkbox.checked = Boolean(item.completed);
+    checkbox.addEventListener("change", () => {
+      if (!checkbox.checked) {
+        item.completed = false;
+        saveTodoItems(todoItems);
+        updateTodoSummary(todoItems);
+        return;
+      }
+
+      pendingTodoRemoval = {
+        itemId: item.id,
+        checkbox
+      };
+
+      if (typeof taskConfirmationModal.showModal === "function") {
+        taskConfirmationModal.showModal();
+      } else {
+        taskConfirmationModal.setAttribute("open", "");
+      }
+    });
+
+    const copyWrap = document.createElement("label");
+    copyWrap.className = "task-checklist-copy";
+    copyWrap.setAttribute("for", checkbox.id);
+
+    const title = document.createElement("strong");
+    title.textContent = item.label;
+
+    const context = document.createElement("span");
+    context.className = "task-context";
+    context.textContent = item.subgroup ? `${item.group} • ${item.subgroup}` : item.group;
+
+    const link = document.createElement("a");
+    link.className = "task-link";
+    link.href = "#";
+    link.textContent = "Open task link";
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+    });
+
+    copyWrap.append(title, context, link);
+    listItem.append(checkbox, copyWrap);
+    todoListItems.appendChild(listItem);
+  });
+
+  updateTodoSummary(todoItems);
 }
 
 function renderFilingScenario() {
@@ -548,8 +668,40 @@ function toggleMenu() {
   }
 }
 
-function showPage(sectionName) {
-  const visibleSection = sectionName === "Document" ? "Document" : "Dashboard";
+function getSectionFromHash() {
+  if (window.location.hash === "#todo-list") {
+    return "To-do List";
+  }
+
+  if (window.location.hash === "#documents") {
+    return "Document";
+  }
+
+  return "Dashboard";
+}
+
+function showPage(sectionName, updateHash = true) {
+  const visibleSection = sectionName === "Document"
+    ? "Document"
+    : sectionName === "To-do List"
+      ? "To-do List"
+      : "Dashboard";
+
+  if (updateHash) {
+    const nextHash = visibleSection === "To-do List"
+      ? "#todo-list"
+      : visibleSection === "Document"
+        ? "#documents"
+        : "";
+
+    if (window.location.hash !== nextHash) {
+      if (nextHash) {
+        window.location.hash = nextHash;
+      } else {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    }
+  }
 
   pageViews.forEach((page) => {
     const isActive = page.dataset.page === visibleSection;
@@ -563,6 +715,8 @@ function showPage(sectionName) {
 
   if (visibleSection === "Document") {
     renderDocuments();
+  } else if (visibleSection === "To-do List") {
+    renderTodoList();
   }
 
   closeMenu();
@@ -588,10 +742,22 @@ function closeUploadModal() {
   pendingUploadDocument = null;
 }
 
+function closeTaskConfirmationModal() {
+  if (typeof taskConfirmationModal.close === "function") {
+    taskConfirmationModal.close();
+  } else {
+    taskConfirmationModal.removeAttribute("open");
+  }
+}
+
 navItems.forEach((item) => {
   item.addEventListener("click", () => {
     showPage(item.dataset.section);
   });
+});
+
+window.addEventListener("hashchange", () => {
+  showPage(getSectionFromHash(), false);
 });
 
 taxTipsShortcut.addEventListener("click", () => {
@@ -684,8 +850,39 @@ documentFileInput.addEventListener("change", () => {
 
 cancelUpload.addEventListener("click", closeUploadModal);
 
+cancelTaskCompletionButton.addEventListener("click", () => {
+  if (pendingTodoRemoval?.checkbox) {
+    pendingTodoRemoval.checkbox.checked = false;
+  }
+
+  pendingTodoRemoval = null;
+  closeTaskConfirmationModal();
+});
+
+confirmTaskCompletionButton.addEventListener("click", () => {
+  if (!pendingTodoRemoval) {
+    closeTaskConfirmationModal();
+    return;
+  }
+
+  const todoItems = loadSavedTodoItems().filter((item) => item.id !== pendingTodoRemoval.itemId);
+  saveTodoItems(todoItems);
+  syncChecklistSelections(todoItems);
+  pendingTodoRemoval = null;
+  closeTaskConfirmationModal();
+  renderTodoList();
+});
+
 uploadModal.addEventListener("close", () => {
   pendingUploadDocument = null;
+});
+
+taskConfirmationModal.addEventListener("close", () => {
+  if (pendingTodoRemoval?.checkbox) {
+    pendingTodoRemoval.checkbox.checked = false;
+  }
+
+  pendingTodoRemoval = null;
 });
 
 confirmUpload.addEventListener("click", () => {
@@ -743,6 +940,8 @@ renderProgressSegments();
 updateDashboardHeader();
 renderFilingScenario();
 renderDocuments();
+renderTodoList();
+showPage(getSectionFromHash(), false);
 updateCarousel();
 startCarousel();
 updateRewards();
