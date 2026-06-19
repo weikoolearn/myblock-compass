@@ -45,8 +45,6 @@
 						<ul class="checklist-selection-list" id="checklistSelectionList"></ul>
 
 						<div class="checklist-actions">
-							<button class="secondary-button" id="resetChecklistButton" type="button" hidden>Start over</button>
-							<button class="secondary-button" id="saveChecklistButton" type="button" hidden>Save changes</button>
 							<button class="primary-button" id="submitChecklistButton" type="submit">Save</button>
 						</div>
 					</form>
@@ -59,10 +57,10 @@
 				<span class="nav-icon">⌂</span>
 				<span>Dashboard</span>
 			</a>
-			<button class="nav-item" type="button">
+			<a class="nav-item" href="index.html#todo-list">
 				<span class="nav-icon">✓</span>
 				<span>To-do List</span>
-			</button>
+			</a>
 			<a class="nav-item" href="index.html">
 				<span class="nav-icon">$</span>
 				<span>Tax</span>
@@ -80,6 +78,7 @@
 
 	<script>
 		const CHECKLIST_STORAGE_KEY = "myblockChecklistState";
+		const TODO_LIST_STORAGE_KEY = "myblockTodoItems";
 		const checklistItems = [
 			{ id: "personal-ssn", group: "Personal Information", label: "Your social security number or tax ID number" },
 			{ id: "personal-spouse", group: "Personal Information", label: "Your spouse's full name, social security number or tax ID number, and date of birth" },
@@ -164,9 +163,6 @@
 		const checklistStageTitle = document.querySelector("#checklist-stage-title");
 		const checklistStageStatus = document.querySelector("#checklistStageStatus");
 		const submitChecklistButton = document.querySelector("#submitChecklistButton");
-		const resetChecklistButton = document.querySelector("#resetChecklistButton");
-		const saveChecklistButton = document.querySelector("#saveChecklistButton");
-		const checklistPage = document.querySelector(".checklist-page");
 
 		let checklistState = loadChecklistState();
 
@@ -192,6 +188,33 @@
 			localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checklistState));
 		}
 
+		function saveChecklistTasksToTodoList() {
+			const existingTodoItems = loadTodoItems();
+			const existingTodoItemsById = new Map(existingTodoItems.map((item) => [item.id, item]));
+			const todoItems = checklistState.selectedItems
+				.map((itemId) => checklistItemsById.get(itemId))
+				.filter(Boolean)
+				.map((itemData) => ({
+					id: itemData.id,
+					label: itemData.label,
+					group: itemData.group,
+					subgroup: itemData.subgroup || "",
+					completed: existingTodoItemsById.get(itemData.id)?.completed || false
+				}));
+
+			localStorage.setItem(TODO_LIST_STORAGE_KEY, JSON.stringify(todoItems));
+		}
+
+		function loadTodoItems() {
+			try {
+				const todoItems = JSON.parse(localStorage.getItem(TODO_LIST_STORAGE_KEY));
+				return Array.isArray(todoItems) ? todoItems : [];
+			} catch (error) {
+				localStorage.removeItem(TODO_LIST_STORAGE_KEY);
+				return [];
+			}
+		}
+
 		function updateSelectionCount() {
 			const selectedCount = checklistSelectionForm.querySelectorAll("input[type='checkbox']:checked").length;
 			checklistCountValue.textContent = `${selectedCount} of ${checklistItems.length}`;
@@ -208,8 +231,6 @@
 			checklistStageStatus.textContent = "";
 			submitChecklistButton.textContent = "Save";
 			submitChecklistButton.hidden = false;
-			resetChecklistButton.hidden = checklistState.selectedItems.length === 0;
-			saveChecklistButton.hidden = true;
 
 			checklistSelectionList.innerHTML = "";
 
@@ -248,100 +269,6 @@
 			saveChecklistState();
 		}
 
-		function renderTaskMode() {
-			const selectedItems = checklistState.selectedItems
-				.map((itemId) => checklistItemsById.get(itemId))
-				.filter(Boolean);
-			const completedItems = new Set(checklistState.completedItems);
-
-			checklistState.mode = "tasks";
-			document.title = "MyBlock Compass Task Checklist";
-			checklistTitle.textContent = "Task Checklist";
-			checklistSubtitle.textContent = "Check off items as you complete them";
-			checklistHelper.textContent = "";
-			checklistStageTitle.textContent = "";
-			checklistStageStatus.textContent = "";
-			submitChecklistButton.hidden = true;
-			resetChecklistButton.hidden = false;
-			saveChecklistButton.hidden = false;
-
-			checklistSelectionList.innerHTML = "";
-
-			if (selectedItems.length === 0) {
-				const emptyItem = document.createElement("li");
-				emptyItem.className = "checklist-empty-state";
-				emptyItem.textContent = "No items were selected. Choose at least one item to build your task checklist.";
-				checklistSelectionList.appendChild(emptyItem);
-				checklistCountValue.textContent = "0 of 0";
-				checklistCountLabel.textContent = "completed";
-				saveChecklistState();
-				return;
-			}
-
-			selectedItems.forEach((itemData, index) => {
-				const listItem = document.createElement("li");
-				listItem.className = "task-checklist-item";
-
-				const checkbox = document.createElement("input");
-				checkbox.className = "checklist-checkbox";
-				checkbox.type = "checkbox";
-				checkbox.id = `task-item-${index}`;
-				checkbox.checked = completedItems.has(itemData.id);
-				checkbox.addEventListener("change", () => {
-					if (checkbox.checked) {
-						completedItems.add(itemData.id);
-					} else {
-						completedItems.delete(itemData.id);
-					}
-
-					checklistState.completedItems = Array.from(completedItems);
-					updateTaskProgress();
-					saveChecklistState();
-				});
-
-				const copyWrap = document.createElement("label");
-				copyWrap.className = "task-checklist-copy";
-				copyWrap.setAttribute("for", checkbox.id);
-
-				const title = document.createElement("strong");
-				title.textContent = itemData.label;
-
-				const context = document.createElement("span");
-				context.className = "task-context";
-				context.textContent = itemData.subgroup ? `${itemData.group} • ${itemData.subgroup}` : itemData.group;
-
-				const link = document.createElement("a");
-				link.className = "task-link";
-				link.href = "#";
-				link.textContent = "Open task link";
-				link.addEventListener("click", (event) => {
-					event.preventDefault();
-				});
-
-				copyWrap.append(title, context, link);
-				listItem.append(checkbox, copyWrap);
-				checklistSelectionList.appendChild(listItem);
-			});
-
-			updateTaskProgress();
-			saveChecklistState();
-		}
-
-		function updateTaskProgress() {
-			const totalTasks = checklistState.selectedItems.length;
-			const completedTasks = checklistState.completedItems.length;
-			const remainingTasks = Math.max(totalTasks - completedTasks, 0);
-
-			checklistCountValue.textContent = `${completedTasks} of ${totalTasks}`;
-			checklistCountLabel.textContent = "completed";
-			checklistStageStatus.textContent = remainingTasks === 1 ? "1 remaining" : `${remainingTasks} remaining`;
-		}
-
-		function scrollChecklistToTop() {
-			checklistPage.scrollIntoView({ behavior: "smooth", block: "start" });
-			window.scrollTo({ top: 0, behavior: "smooth" });
-		}
-
 		checklistSelectionForm.addEventListener("submit", (event) => {
 			event.preventDefault();
 
@@ -350,31 +277,13 @@
 
 			checklistState.selectedItems = selectedItems;
 			checklistState.completedItems = [];
+			checklistState.mode = "selection";
 			saveChecklistState();
-			renderTaskMode();
-			scrollChecklistToTop();
+			saveChecklistTasksToTodoList();
+			window.location.href = "index.html#todo-list";
 		});
 
-		resetChecklistButton.addEventListener("click", () => {
-			checklistState = {
-				mode: "selection",
-				selectedItems: [],
-				completedItems: []
-			};
-
-			saveChecklistState();
-			renderSelectionMode();
-		});
-
-		saveChecklistButton.addEventListener("click", () => {
-			// Intentionally no-op for now.
-		});
-
-		if (checklistState.mode === "tasks") {
-			renderTaskMode();
-		} else {
-			renderSelectionMode();
-		}
+		renderSelectionMode();
 	</script>
 </body>
 </html>

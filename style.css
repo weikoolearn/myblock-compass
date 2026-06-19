@@ -1159,6 +1159,23 @@ h1 {
   gap: 16px;
 }
 
+.task-confirmation-modal {
+  width: min(460px, calc(100vw - 32px));
+}
+
+.task-confirmation-dialog {
+  gap: 20px;
+}
+
+.task-confirmation-dialog h2 {
+  font-size: 24px;
+  line-height: 1.15;
+}
+
+.task-confirmation-dialog p {
+  color: var(--muted);
+}
+
 .upload-dialog h2,
 .upload-dialog p {
   margin: 0;
