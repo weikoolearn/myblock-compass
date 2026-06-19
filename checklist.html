@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>MyBlock Compass Checklist</title>
+	<link rel="stylesheet" href="style.css?v=4">
+</head>
+<body>
+	<div class="app-shell">
+		<main class="dashboard checklist-dashboard">
+			<header class="app-header">
+				<div class="brand">
+					<div class="brand-mark">MB</div>
+					<div>
+						<p class="brand-name">MyBlock</p>
+						<p class="brand-subtitle">Compass</p>
+					</div>
+				</div>
+				<a class="checklist-home-link" href="index.html" aria-label="Back to dashboard">Dashboard</a>
+			</header>
+
+			<section class="page-view active checklist-page" aria-labelledby="checklist-title">
+				<div class="page-title-row">
+					<div>
+						<p class="eyebrow">Personal checklist</p>
+						<h1 id="checklist-title">Select the items that apply to you</h1>
+						<p class="subtitle" id="checklistSubtitle"></p>
+					</div>
+					<div class="document-count-card checklist-count-card">
+						<strong id="checklistCountValue">0 of 12</strong>
+						<span id="checklistCountLabel">selected</span>
+					</div>
+				</div>
+
+				<section class="required-documents-card checklist-flow-card" aria-labelledby="checklist-stage-title">
+					<div class="required-documents-header">
+						<h2 id="checklist-stage-title"></h2>
+						<span id="checklistStageStatus"></span>
+					</div>
+
+					<p class="checklist-helper" id="checklistHelper"></p>
+
+					<form id="checklistSelectionForm" class="checklist-form">
+						<ul class="checklist-selection-list" id="checklistSelectionList"></ul>
+
+						<div class="checklist-actions">
+							<button class="primary-button" id="submitChecklistButton" type="submit">Save</button>
+						</div>
+					</form>
+				</section>
+			</section>
+		</main>
+
+		<nav class="bottom-nav" aria-label="Primary navigation">
+			<a class="nav-item" href="index.html">
+				<span class="nav-icon">⌂</span>
+				<span>Dashboard</span>
+			</a>
+			<a class="nav-item" href="index.html#todo-list">
+				<span class="nav-icon">✓</span>
+				<span>To-do List</span>
+			</a>
+			<a class="nav-item" href="index.html">
+				<span class="nav-icon">$</span>
+				<span>Tax</span>
+			</a>
+			<a class="nav-item" href="index.html">
+				<span class="nav-icon">✉</span>
+				<span>Message</span>
+			</a>
+			<a class="nav-item" href="index.html">
+				<span class="nav-icon">□</span>
+				<span>Document</span>
+			</a>
+		</nav>
+	</div>
+
+	<script>
+		const CHECKLIST_STORAGE_KEY = "myblockChecklistState";
+		const TODO_LIST_STORAGE_KEY = "myblockTodoItems";
+		const checklistItems = [
+			{ id: "personal-ssn", group: "Personal Information", label: "Your social security number or tax ID number" },
+			{ id: "personal-spouse", group: "Personal Information", label: "Your spouse's full name, social security number or tax ID number, and date of birth" },
+			{ id: "personal-pin", group: "Personal Information", label: "Identity Protection PIN, if one has been issued to you, your spouse, or your dependent by the IRS" },
+			{ id: "personal-routing", group: "Personal Information", label: "Routing and account numbers to receive your refund by direct deposit or pay your balance due if you choose" },
+			{ id: "personal-foreign", group: "Personal Information", label: "Foreign reporting and residency information, if applicable" },
+			{ id: "dependents-dob", group: "Dependent(s) Information", label: "Dates of birth and social security numbers or tax ID numbers" },
+			{ id: "dependents-childcare", group: "Dependent(s) Information", label: "Childcare records, including the provider's tax ID number, if applicable" },
+			{ id: "dependents-income", group: "Dependent(s) Information", label: "Income of dependents and of other adults in your home" },
+			{ id: "dependents-8332", group: "Dependent(s) Information", label: "Form 8332 showing that the child's custodial parent is releasing their right to claim a child to you, the noncustodial parent, if applicable" },
+			{ id: "income-w2", group: "Sources of Income", subgroup: "Employed", label: "Forms W-2" },
+			{ id: "income-unemployment", group: "Sources of Income", subgroup: "Unemployed", label: "Unemployment (1099-G)" },
+			{ id: "self-employed-1099", group: "Sources of Income", subgroup: "Self-Employed", label: "Forms 1099, Schedules K-1, income records to verify amounts not reported on 1099-MISC or 1099-NEC" },
+			{ id: "self-employed-expenses", group: "Sources of Income", subgroup: "Self-Employed", label: "Records of all expenses, including check registers or credit card statements, and receipts" },
+			{ id: "self-employed-assets", group: "Sources of Income", subgroup: "Self-Employed", label: "Business-use asset information, including cost and date placed in service, for depreciation" },
+			{ id: "self-employed-home-office", group: "Sources of Income", subgroup: "Self-Employed", label: "Office in home information, if applicable" },
+			{ id: "self-employed-estimated-tax", group: "Sources of Income", subgroup: "Self-Employed", label: "Record of estimated tax payments made (Form 1040-ES)" },
+			{ id: "rental-income-records", group: "Sources of Income", subgroup: "Rental Income", label: "Records of income and expenses" },
+			{ id: "rental-income-assets", group: "Sources of Income", subgroup: "Rental Income", label: "Rental asset information, including cost and date placed in service, for depreciation" },
+			{ id: "rental-income-estimated-tax", group: "Sources of Income", subgroup: "Rental Income", label: "Record of estimated tax payments made (Form 1040-ES)" },
+			{ id: "retirement-1099r", group: "Sources of Income", subgroup: "Retirement Income", label: "Pension, IRA, or annuity income (1099-R)" },
+			{ id: "retirement-basis", group: "Sources of Income", subgroup: "Retirement Income", label: "Traditional IRA basis, meaning amounts you contributed to the IRA that were already taxed" },
+			{ id: "retirement-ssa", group: "Sources of Income", subgroup: "Retirement Income", label: "Social Security or RRB income (SSA-1099, RRB-1099)" },
+			{ id: "investments-interest", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Interest and dividend income (1099-INT, 1099-OID, 1099-DIV)" },
+			{ id: "investments-sales", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Income from sales of stock or other property (1099-B, 1099-S)" },
+			{ id: "investments-basis", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Dates of acquisition and records of your cost or other basis in property you sold, if basis is not reported on 1099-B" },
+			{ id: "investments-hsa", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Health Savings Account and long-term care reimbursements (1099-SA or 1099-LTC)" },
+			{ id: "investments-expenses", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Expenses related to your investments" },
+			{ id: "investments-estimated-tax", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Record of estimated tax payments made (Form 1040-ES)" },
+			{ id: "investments-digital-assets", group: "Sources of Income", subgroup: "Savings & Investments or Dividends", label: "Transactions involving digital assets like cryptocurrency or NFTs (1099-DA)" },
+			{ id: "other-income-1099k", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Payment Card and Third Party Network Transactions (1099-K)" },
+			{ id: "other-income-gambling", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Gambling income, including W-2G or records showing income as well as expense records" },
+			{ id: "other-income-jury", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Jury duty records" },
+			{ id: "other-income-hobby", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Hobby income and expenses" },
+			{ id: "other-income-prizes", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Prizes and awards" },
+			{ id: "other-income-trust", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Trust income" },
+			{ id: "other-income-royalty", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Royalty income (1099-MISC)" },
+			{ id: "other-income-other-1099s", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Any other 1099s received" },
+			{ id: "other-income-alimony", group: "Sources of Income", subgroup: "Other Income & Losses", label: "Record of alimony paid or received with ex-spouse's name and SSN" },
+			{ id: "other-income-state-refund", group: "Sources of Income", subgroup: "Other Income & Losses", label: "State tax refund" },
+			{ id: "deductions-mortgage", group: "Types of Deductions", subgroup: "Home and Vehicle Ownership", label: "Forms 1098 or other mortgage interest statements" },
+			{ id: "deductions-property-tax", group: "Types of Deductions", subgroup: "Home and Vehicle Ownership", label: "Real estate and personal property tax records" },
+			{ id: "deductions-energy", group: "Types of Deductions", subgroup: "Home and Vehicle Ownership", label: "Receipts for energy-saving home improvements, such as solar panels or a solar water heater" },
+			{ id: "deductions-ev", group: "Types of Deductions", subgroup: "Home and Vehicle Ownership", label: "Electric vehicle information" },
+			{ id: "deductions-other-1098", group: "Types of Deductions", subgroup: "Home and Vehicle Ownership", label: "All other 1098 series forms" },
+			{ id: "charity-cash", group: "Types of Deductions", subgroup: "Charitable Donations", label: "Cash amounts donated to houses of worship, schools, or other charitable organizations" },
+			{ id: "charity-noncash", group: "Types of Deductions", subgroup: "Charitable Donations", label: "Records of non-cash charitable donations" },
+			{ id: "charity-mileage", group: "Types of Deductions", subgroup: "Charitable Donations", label: "Amounts of miles driven for charitable or medical purposes" },
+			{ id: "medical-healthcare", group: "Types of Deductions", subgroup: "Medical Expenses", label: "Amounts paid for healthcare, insurance, and to doctors, dentists, and hospitals" },
+			{ id: "medical-premiums", group: "Types of Deductions", subgroup: "Medical Expenses", label: "Amounts paid for qualified insurance premiums if paid outside of the Marketplace or an employer-provided plan" },
+			{ id: "insurance-1095a", group: "Types of Deductions", subgroup: "Health Insurance", label: "Form 1095-A if you enrolled in an insurance plan through the Marketplace (Exchange)" },
+			{ id: "childcare-daycare", group: "Types of Deductions", subgroup: "Childcare Expenses", label: "Fees paid to a licensed day care center or family day care for care of an infant or preschooler" },
+			{ id: "childcare-babysitter", group: "Types of Deductions", subgroup: "Childcare Expenses", label: "Amounts paid to a baby-sitter or care provider for your child under age 13 while you work" },
+			{ id: "childcare-fsa", group: "Types of Deductions", subgroup: "Childcare Expenses", label: "Expenses paid through a dependent care flexible spending account at work" },
+			{ id: "education-1098t", group: "Types of Deductions", subgroup: "Educational Expenses", label: "Forms 1098-T from educational institutions" },
+			{ id: "education-receipts", group: "Types of Deductions", subgroup: "Educational Expenses", label: "Receipts that itemize qualified educational expenses" },
+			{ id: "education-scholarships", group: "Types of Deductions", subgroup: "Educational Expenses", label: "Records of any scholarships or fellowships you received" },
+			{ id: "education-1098e", group: "Types of Deductions", subgroup: "Educational Expenses", label: "Form 1098-E if you paid student loan interest" },
+			{ id: "educator-classroom", group: "Types of Deductions", subgroup: "K-12 Educator Expenses", label: "Receipts for classroom expenses for educators in grades K-12" },
+			{ id: "salt-income-sales", group: "Types of Deductions", subgroup: "State and Local Taxes", label: "Amount of state and local income or sales tax paid, other than wage withholding" },
+			{ id: "salt-vehicle", group: "Types of Deductions", subgroup: "State and Local Taxes", label: "Invoice showing amount of vehicle sales tax paid and/or personal property tax on vehicles" },
+			{ id: "savings-hsa", group: "Types of Deductions", subgroup: "Retirement & Other Savings", label: "Form 5498-SA showing HSA contributions" },
+			{ id: "savings-ira", group: "Types of Deductions", subgroup: "Retirement & Other Savings", label: "Form 5498 showing IRA contributions" },
+			{ id: "savings-other-5498", group: "Types of Deductions", subgroup: "Retirement & Other Savings", label: "All other 5498 series forms (5498-QA, 5498-ESA)" },
+			{ id: "disaster-location", group: "Types of Deductions", subgroup: "Federally Declared Disaster", label: "City or county where you lived, worked, or had property" },
+			{ id: "disaster-losses", group: "Types of Deductions", subgroup: "Federally Declared Disaster", label: "Records to support property losses, including appraisal and clean-up costs" },
+			{ id: "disaster-rebuild", group: "Types of Deductions", subgroup: "Federally Declared Disaster", label: "Records of rebuilding or repair costs" },
+			{ id: "disaster-insurance", group: "Types of Deductions", subgroup: "Federally Declared Disaster", label: "Insurance reimbursements or claims to be paid" },
+			{ id: "disaster-fema", group: "Types of Deductions", subgroup: "Federally Declared Disaster", label: "FEMA assistance information" },
+			{ id: "disaster-website", group: "Types of Deductions", subgroup: "Federally Declared Disaster", label: "Check the FEMA website to see if your county has been declared a federal disaster area" }
+		];
+
+		const checklistItemsById = new Map(checklistItems.map((item) => [item.id, item]));
+
+		const checklistSelectionForm = document.querySelector("#checklistSelectionForm");
+		const checklistSelectionList = document.querySelector("#checklistSelectionList");
+		const checklistTitle = document.querySelector("#checklist-title");
+		const checklistSubtitle = document.querySelector("#checklistSubtitle");
+		const checklistHelper = document.querySelector("#checklistHelper");
+		const checklistCountValue = document.querySelector("#checklistCountValue");
+		const checklistCountLabel = document.querySelector("#checklistCountLabel");
+		const checklistStageTitle = document.querySelector("#checklist-stage-title");
+		const checklistStageStatus = document.querySelector("#checklistStageStatus");
+		const submitChecklistButton = document.querySelector("#submitChecklistButton");
+
+		let checklistState = loadChecklistState();
+
+		function loadChecklistState() {
+			try {
+				const savedState = JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY));
+
+				if (savedState && Array.isArray(savedState.selectedItems) && Array.isArray(savedState.completedItems)) {
+					return savedState;
+				}
+			} catch (error) {
+				localStorage.removeItem(CHECKLIST_STORAGE_KEY);
+			}
+
+			return {
+				mode: "selection",
+				selectedItems: [],
+				completedItems: []
+			};
+		}
+
+		function saveChecklistState() {
+			localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checklistState));
+		}
+
+		function saveChecklistTasksToTodoList() {
+			const existingTodoItems = loadTodoItems();
+			const existingTodoItemsById = new Map(existingTodoItems.map((item) => [item.id, item]));
+			const todoItems = checklistState.selectedItems
+				.map((itemId) => checklistItemsById.get(itemId))
+				.filter(Boolean)
+				.map((itemData) => ({
+					id: itemData.id,
+					label: itemData.label,
+					group: itemData.group,
+					subgroup: itemData.subgroup || "",
+					completed: existingTodoItemsById.get(itemData.id)?.completed || false
+				}));
+
+			localStorage.setItem(TODO_LIST_STORAGE_KEY, JSON.stringify(todoItems));
+		}
+
+		function loadTodoItems() {
+			try {
+				const todoItems = JSON.parse(localStorage.getItem(TODO_LIST_STORAGE_KEY));
+				return Array.isArray(todoItems) ? todoItems : [];
+			} catch (error) {
+				localStorage.removeItem(TODO_LIST_STORAGE_KEY);
+				return [];
+			}
+		}
+
+		function updateSelectionCount() {
+			const selectedCount = checklistSelectionForm.querySelectorAll("input[type='checkbox']:checked").length;
+			checklistCountValue.textContent = `${selectedCount} of ${checklistItems.length}`;
+			checklistCountLabel.textContent = "selected";
+		}
+
+		function renderSelectionMode() {
+			checklistState.mode = "selection";
+			document.title = "MyBlock Compass Checklist";
+			checklistTitle.textContent = "Select the items that apply to you";
+			checklistSubtitle.textContent = "";
+			checklistHelper.textContent = "";
+			checklistStageTitle.textContent = "";
+			checklistStageStatus.textContent = "";
+			submitChecklistButton.textContent = "Save";
+			submitChecklistButton.hidden = false;
+
+			checklistSelectionList.innerHTML = "";
+
+			checklistItems.forEach((itemData, index) => {
+				const listItem = document.createElement("li");
+				listItem.className = "checklist-choice-item";
+
+				const label = document.createElement("label");
+				label.className = "checklist-choice-label";
+				label.setAttribute("for", `checklist-item-${index}`);
+
+				const checkbox = document.createElement("input");
+				checkbox.className = "checklist-checkbox";
+				checkbox.type = "checkbox";
+				checkbox.id = `checklist-item-${index}`;
+				checkbox.value = itemData.id;
+				checkbox.checked = checklistState.selectedItems.includes(itemData.id);
+				checkbox.addEventListener("change", updateSelectionCount);
+
+				const copyWrap = document.createElement("span");
+				copyWrap.className = "checklist-choice-copy";
+
+				const title = document.createElement("strong");
+				title.textContent = itemData.label;
+
+				const description = document.createElement("span");
+				description.textContent = itemData.subgroup ? `${itemData.group} • ${itemData.subgroup}` : itemData.group;
+
+				copyWrap.append(title, description);
+				label.append(checkbox, copyWrap);
+				listItem.appendChild(label);
+				checklistSelectionList.appendChild(listItem);
+			});
+
+			updateSelectionCount();
+			saveChecklistState();
+		}
+
+		checklistSelectionForm.addEventListener("submit", (event) => {
+			event.preventDefault();
+
+			const selectedItems = Array.from(checklistSelectionForm.querySelectorAll("input[type='checkbox']:checked"))
+				.map((input) => input.value);
+
+			checklistState.selectedItems = selectedItems;
+			checklistState.completedItems = [];
+			checklistState.mode = "selection";
+			saveChecklistState();
+			saveChecklistTasksToTodoList();
+			window.location.href = "index.html#todo-list";
+		});
+
+		renderSelectionMode();
+	</script>
+</body>
+</html>

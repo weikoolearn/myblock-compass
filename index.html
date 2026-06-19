@@ -195,6 +195,28 @@
       </div>
       </div>
 
+      <section class="page-view todo-page" id="todoPage" data-page="To-do List" hidden aria-labelledby="todo-title">
+        <div class="page-title-row">
+          <div>
+            <p class="eyebrow">Task tracker</p>
+            <h1 id="todo-title">To-do List</h1>
+            <p class="subtitle"></p>
+          </div>
+          <div class="document-count-card">
+            <strong id="todoProgressSummary">0 of 0</strong>
+            <span>completed</span>
+          </div>
+        </div>
+
+        <div class="required-documents-card">
+          <div class="required-documents-header">
+            <h2></h2>
+            <span id="todoRemainingSummary">0 remaining</span>
+          </div>
+          <ul class="checklist-selection-list" id="todoListItems"></ul>
+        </div>
+      </section>
+
       <section class="page-view document-page" id="documentPage" data-page="Document" hidden aria-labelledby="documents-title">
         <div class="document-center-header">
           <h1 id="documents-title">Document Center</h1>
@@ -248,6 +270,20 @@
           <button class="primary-button" id="confirmUpload" type="button" disabled>Upload</button>
         </div>
       </form>
+    </dialog>
+
+    <dialog class="upload-modal task-confirmation-modal" id="taskConfirmationModal" aria-labelledby="task-confirmation-title">
+      <div class="upload-dialog task-confirmation-dialog">
+        <div>
+          <p class="eyebrow">Confirm completion</p>
+          <h2 id="task-confirmation-title">Have you sent this item to your tax pro?</h2>
+          <p id="taskConfirmationDescription"></p>
+        </div>
+        <div class="modal-actions">
+          <button class="secondary-button" id="cancelTaskCompletionButton" type="button">No</button>
+          <button class="primary-button" id="confirmTaskCompletionButton" type="button">Yes</button>
+        </div>
+      </div>
     </dialog>
   </div>
 

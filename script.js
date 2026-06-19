@@ -1,6 +1,8 @@
 const STARTING_POINTS = 420;
 const NEXT_MILESTONE = 500;
 const ROTATION_INTERVAL = 10000;
+const TODO_LIST_STORAGE_KEY = "myblockTodoItems";
+const CHECKLIST_STORAGE_KEY = "myblockChecklistState";
 
 const activeUserProfile = {
   displayName: "Sarah Johnson"
@@ -170,9 +172,6 @@ let isCarouselPaused = false;
 let pendingUploadDocument = null;
 let activeDocumentMode = "upload";
 let activeDocumentYear = 2025;
-let activeExperienceQuestion = 0;
-let experienceSetupComplete = false;
-const experienceAnswers = {};
 
 const navItems = document.querySelectorAll(".nav-item");
 const pageViews = document.querySelectorAll(".page-view");
@@ -206,6 +205,9 @@ const documentMissingSummary = document.querySelector("#documentMissingSummary")
 const viewDocumentsCta = document.querySelector("#viewDocumentsCta");
 const documentPageMissingSummary = document.querySelector("#documentPageMissingSummary");
 const requiredDocumentList = document.querySelector("#requiredDocumentList");
+const todoProgressSummary = document.querySelector("#todoProgressSummary");
+const todoRemainingSummary = document.querySelector("#todoRemainingSummary");
+const todoListItems = document.querySelector("#todoListItems");
 const documentModeButtons = document.querySelectorAll("[data-document-mode]");
 const uploadDocumentsPanel = document.querySelector("#uploadDocumentsPanel");
 const browseDocumentsPanel = document.querySelector("#browseDocumentsPanel");
@@ -218,6 +220,10 @@ const documentFileInput = document.querySelector("#documentFileInput");
 const selectedFileName = document.querySelector("#selectedFileName");
 const cancelUpload = document.querySelector("#cancelUpload");
 const confirmUpload = document.querySelector("#confirmUpload");
+const taskConfirmationModal = document.querySelector("#taskConfirmationModal");
+const taskConfirmationDescription = document.querySelector("#taskConfirmationDescription");
+const cancelTaskCompletionButton = document.querySelector("#cancelTaskCompletionButton");
+const confirmTaskCompletionButton = document.querySelector("#confirmTaskCompletionButton");
 const pointsEarned = document.querySelector("#pointsEarned");
 const rewardProgress = document.querySelector("#rewardProgress");
 const milestoneText = document.querySelector("#milestoneText");
@@ -388,133 +394,6 @@ function showPrototypeMessage(button, label) {
   const original = button.textContent;
   button.textContent = label;
   window.setTimeout(() => { button.textContent = original; }, 1200);
-}
-
-function renderExperienceSetup() {
-  experienceSetupContent.innerHTML = "";
-
-  if (experienceSetupComplete) {
-    const summary = document.createElement("div");
-    summary.className = "experience-summary";
-    summary.innerHTML = "<h3>Preferences saved</h3><p>Your filing experience is ready.</p>";
-
-    const list = document.createElement("dl");
-    list.className = "preference-summary-list";
-    experienceQuestions.forEach((question) => {
-      const row = document.createElement("div");
-      const term = document.createElement("dt");
-      const description = document.createElement("dd");
-      term.textContent = question.label;
-      const answer = experienceAnswers[question.key];
-      description.textContent = Array.isArray(answer) ? answer.join(", ") : answer;
-      row.append(term, description);
-      list.appendChild(row);
-    });
-
-    const editButton = document.createElement("button");
-    editButton.type = "button";
-    editButton.className = "secondary-button edit-preferences";
-    editButton.textContent = "Edit preferences";
-    editButton.addEventListener("click", () => {
-      activeExperienceQuestion = 0;
-      experienceSetupComplete = false;
-      renderExperienceSetup();
-    });
-    const doneButton = document.createElement("button");
-    doneButton.type = "button";
-    doneButton.className = "primary-button";
-    doneButton.textContent = "Done";
-    doneButton.addEventListener("click", collapseExperienceSetup);
-    const summaryActions = document.createElement("div");
-    summaryActions.className = "experience-controls";
-    summaryActions.append(editButton, doneButton);
-    summary.append(list, summaryActions);
-    experienceSetupContent.appendChild(summary);
-    return;
-  }
-
-  const question = experienceQuestions[activeExperienceQuestion];
-  const questionCard = document.createElement("div");
-  questionCard.className = "experience-question";
-  const title = document.createElement("h3");
-  title.textContent = question.question;
-  const type = document.createElement("p");
-  type.className = "experience-question-type";
-  type.textContent = question.multiple ? "Select all that apply" : "Select one";
-  const options = document.createElement("div");
-  options.className = "experience-options";
-
-  question.options.forEach((option) => {
-    const button = document.createElement("button");
-    button.type = "button";
-    button.className = "experience-option";
-    const currentAnswer = experienceAnswers[question.key];
-    const selected = question.multiple ? (currentAnswer || []).includes(option) : currentAnswer === option;
-    button.classList.toggle("selected", selected);
-    button.setAttribute("aria-pressed", selected);
-    button.textContent = option;
-    button.addEventListener("click", () => {
-      if (question.multiple) {
-        const answers = experienceAnswers[question.key] || [];
-        experienceAnswers[question.key] = answers.includes(option)
-          ? answers.filter((answer) => answer !== option)
-          : [...answers, option];
-      } else {
-        experienceAnswers[question.key] = option;
-      }
-      renderExperienceSetup();
-    });
-    options.appendChild(button);
-  });
-
-  const controls = document.createElement("div");
-  controls.className = "experience-controls";
-  const back = document.createElement("button");
-  back.type = "button";
-  back.className = "secondary-button";
-  back.textContent = "Back";
-  back.disabled = activeExperienceQuestion === 0;
-  back.addEventListener("click", () => { activeExperienceQuestion -= 1; renderExperienceSetup(); });
-  const next = document.createElement("button");
-  next.type = "button";
-  next.className = "primary-button";
-  next.textContent = activeExperienceQuestion === experienceQuestions.length - 1 ? "Save preferences" : "Continue";
-  const answer = experienceAnswers[question.key];
-  next.disabled = !answer || (Array.isArray(answer) && answer.length === 0);
-  next.addEventListener("click", () => {
-    if (activeExperienceQuestion === experienceQuestions.length - 1) experienceSetupComplete = true;
-    else activeExperienceQuestion += 1;
-    renderExperienceSetup();
-  });
-  controls.append(back, next);
-
-  const dots = document.createElement("div");
-  dots.className = "experience-dots";
-  dots.setAttribute("aria-label", "Setup progress");
-  experienceQuestions.forEach((dotQuestion, index) => {
-    const dot = document.createElement("button");
-    dot.type = "button";
-    dot.className = "experience-dot";
-    dot.classList.toggle("active", index === activeExperienceQuestion);
-    dot.disabled = index > activeExperienceQuestion;
-    dot.setAttribute("aria-label", `Question ${index + 1}: ${dotQuestion.question}`);
-    dot.addEventListener("click", () => { activeExperienceQuestion = index; renderExperienceSetup(); });
-    dots.appendChild(dot);
-  });
-
-  questionCard.append(title, type, options, controls, dots);
-  experienceSetupContent.appendChild(questionCard);
-}
-
-function expandExperienceSetup() {
-  experienceSetup.hidden = false;
-  experiencePreferencesToggle.setAttribute("aria-expanded", "true");
-  renderExperienceSetup();
-}
-
-function collapseExperienceSetup() {
-  experienceSetup.hidden = true;
-  experiencePreferencesToggle.setAttribute("aria-expanded", "false");
 }
 
 function renderFilingScenario() {
@@ -710,8 +589,40 @@ function toggleMenu() {
   }
 }
 
-function showPage(sectionName) {
-  const visibleSection = sectionName === "Document" ? "Document" : "Dashboard";
+function getSectionFromHash() {
+  if (window.location.hash === "#todo-list") {
+    return "To-do List";
+  }
+
+  if (window.location.hash === "#documents") {
+    return "Document";
+  }
+
+  return "Dashboard";
+}
+
+function showPage(sectionName, updateHash = true) {
+  const visibleSection = sectionName === "Document"
+    ? "Document"
+    : sectionName === "To-do List"
+      ? "To-do List"
+      : "Dashboard";
+
+  if (updateHash) {
+    const nextHash = visibleSection === "To-do List"
+      ? "#todo-list"
+      : visibleSection === "Document"
+        ? "#documents"
+        : "";
+
+    if (window.location.hash !== nextHash) {
+      if (nextHash) {
+        window.location.hash = nextHash;
+      } else {
+        history.replaceState(null, "", window.location.pathname + window.location.search);
+      }
+    }
+  }
 
   pageViews.forEach((page) => {
     const isActive = page.dataset.page === visibleSection;
@@ -725,6 +636,8 @@ function showPage(sectionName) {
 
   if (visibleSection === "Document") {
     renderDocuments();
+  } else if (visibleSection === "To-do List") {
+    renderTodoList();
   }
 
   closeMenu();
@@ -750,10 +663,22 @@ function closeUploadModal() {
   pendingUploadDocument = null;
 }
 
+function closeTaskConfirmationModal() {
+  if (typeof taskConfirmationModal.close === "function") {
+    taskConfirmationModal.close();
+  } else {
+    taskConfirmationModal.removeAttribute("open");
+  }
+}
+
 navItems.forEach((item) => {
   item.addEventListener("click", () => {
     showPage(item.dataset.section);
   });
+});
+
+window.addEventListener("hashchange", () => {
+  showPage(getSectionFromHash(), false);
 });
 
 taxTipsShortcut.addEventListener("click", () => {
@@ -810,6 +735,11 @@ rewardsShortcut.addEventListener("click", (event) => {
 
 menuItems.forEach((item) => {
   item.addEventListener("click", () => {
+    if (item.dataset.menuSection === "Checklist") {
+      window.location.href = "checklist.html";
+      return;
+    }
+
     menuItems.forEach((menuItem) => menuItem.classList.remove("active"));
     item.classList.add("active");
     menuStatus.textContent = `${item.dataset.menuSection} selected`;
@@ -848,8 +778,39 @@ documentFileInput.addEventListener("change", () => {
 
 cancelUpload.addEventListener("click", closeUploadModal);
 
+cancelTaskCompletionButton.addEventListener("click", () => {
+  if (pendingTodoRemoval?.checkbox) {
+    pendingTodoRemoval.checkbox.checked = false;
+  }
+
+  pendingTodoRemoval = null;
+  closeTaskConfirmationModal();
+});
+
+confirmTaskCompletionButton.addEventListener("click", () => {
+  if (!pendingTodoRemoval) {
+    closeTaskConfirmationModal();
+    return;
+  }
+
+  const todoItems = loadSavedTodoItems().filter((item) => item.id !== pendingTodoRemoval.itemId);
+  saveTodoItems(todoItems);
+  syncChecklistSelections(todoItems);
+  pendingTodoRemoval = null;
+  closeTaskConfirmationModal();
+  renderTodoList();
+});
+
 uploadModal.addEventListener("close", () => {
   pendingUploadDocument = null;
+});
+
+taskConfirmationModal.addEventListener("close", () => {
+  if (pendingTodoRemoval?.checkbox) {
+    pendingTodoRemoval.checkbox.checked = false;
+  }
+
+  pendingTodoRemoval = null;
 });
 
 confirmUpload.addEventListener("click", () => {
@@ -908,6 +869,8 @@ updateDashboardHeader();
 renderExperienceSetup();
 renderFilingScenario();
 renderDocuments();
+renderTodoList();
+showPage(getSectionFromHash(), false);
 updateCarousel();
 startCarousel();
 updateRewards();
