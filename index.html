@@ -70,13 +70,22 @@
 
       <div class="page-view active" id="dashboardPage" data-page="Dashboard">
       <section class="dashboard-header">
-        <div>
+        <div class="dashboard-header-copy">
           <p class="eyebrow" id="dashboardEyebrow">Sarah Johnson's dashboard</p>
           <h1 id="dashboardWelcome">Welcome Sarah Johnson</h1>
           <p class="subtitle">Personalized guidance for your financial year</p>
-          <button class="tax-tips-shortcut" id="taxTipsShortcut" type="button" aria-controls="personalizedRecommendations">
-            Tax Tips
-          </button>
+          <div class="dashboard-header-actions">
+            <button class="tax-tips-shortcut" id="taxTipsShortcut" type="button" aria-controls="personalizedRecommendations">
+              Tax Tips
+            </button>
+            <aside class="life-events-banner" aria-label="Life events">
+              <div class="life-events-banner-topline">
+                <span class="life-events-kicker">Life events</span>
+                <span class="life-events-status" id="lifeEventsStatus">1 of 4</span>
+              </div>
+              <button class="life-events-link life-events-link-main" id="lifeEventsLink" type="button">New Baby?</button>
+            </aside>
+          </div>
         </div>
       </section>
 
