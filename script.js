@@ -42,6 +42,30 @@ olderDocumentYears.forEach((year, index) => {
 });
 const historicalFiles = ["Federal Return.pdf", "State Return.pdf", "Signed 8879.pdf", "W-2.pdf", "1099-INT.pdf"];
 
+const experienceQuestions = [
+  {
+    key: "communication", label: "Communication preference", multiple: true,
+    question: "How would you prefer we communicate with you?",
+    options: ["Phone Call", "Text Message", "Secure Message (App/Portal)", "In-Office Appointment Only"]
+  },
+  {
+    key: "completion", label: "Completion goal", question: "When would you like your return completed?",
+    options: ["Within 24 hours", "1–2 days", "Within one week", "By the end of tax season", "Specific date"]
+  },
+  {
+    key: "review", label: "Review method", question: "How would you like to complete your tax return?",
+    options: ["In-office appointment", "Approve Online + Phone Call review", "Approve Online + Video review", "Approve Online (AOL) – no appointment needed"]
+  },
+  {
+    key: "priority", label: "Top priority", question: "What matters most to you this tax season?",
+    options: ["Fast completion", "Maximizing refund/savings", "Ongoing tax guidance", "Planning for future financial goals"]
+  },
+  {
+    key: "planning", label: "Future planning interest", question: "Would you like help planning beyond this tax return?",
+    options: ["Yes, I’d like guidance and ongoing support", "Maybe — open to learning more", "Not at this time"]
+  }
+];
+
 const filingScenarios = {
   efile: {
     method: "E-file",
@@ -146,6 +170,9 @@ let isCarouselPaused = false;
 let pendingUploadDocument = null;
 let activeDocumentMode = "upload";
 let activeDocumentYear = 2025;
+let activeExperienceQuestion = 0;
+let experienceSetupComplete = false;
+const experienceAnswers = {};
 
 const navItems = document.querySelectorAll(".nav-item");
 const pageViews = document.querySelectorAll(".page-view");
@@ -158,6 +185,10 @@ const dashboardEyebrow = document.querySelector("#dashboardEyebrow");
 const dashboardWelcome = document.querySelector("#dashboardWelcome");
 const taxTipsShortcut = document.querySelector("#taxTipsShortcut");
 const personalizedRecommendations = document.querySelector("#personalizedRecommendations");
+const experienceSetupContent = document.querySelector("#experienceSetupContent");
+const experienceSetup = document.querySelector("#experienceSetup");
+const experiencePreferencesToggle = document.querySelector("#experiencePreferencesToggle");
+const closeExperienceSetup = document.querySelector("#closeExperienceSetup");
 const scenarioButtons = document.querySelectorAll("[data-scenario]");
 const filingMethod = document.querySelector("#filingMethod");
 const filingProgressPercent = document.querySelector("#filingProgressPercent");
@@ -353,6 +384,133 @@ function showPrototypeMessage(button, label) {
   const original = button.textContent;
   button.textContent = label;
   window.setTimeout(() => { button.textContent = original; }, 1200);
+}
+
+function renderExperienceSetup() {
+  experienceSetupContent.innerHTML = "";
+
+  if (experienceSetupComplete) {
+    const summary = document.createElement("div");
+    summary.className = "experience-summary";
+    summary.innerHTML = "<h3>Preferences saved</h3><p>Your filing experience is ready.</p>";
+
+    const list = document.createElement("dl");
+    list.className = "preference-summary-list";
+    experienceQuestions.forEach((question) => {
+      const row = document.createElement("div");
+      const term = document.createElement("dt");
+      const description = document.createElement("dd");
+      term.textContent = question.label;
+      const answer = experienceAnswers[question.key];
+      description.textContent = Array.isArray(answer) ? answer.join(", ") : answer;
+      row.append(term, description);
+      list.appendChild(row);
+    });
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "secondary-button edit-preferences";
+    editButton.textContent = "Edit preferences";
+    editButton.addEventListener("click", () => {
+      activeExperienceQuestion = 0;
+      experienceSetupComplete = false;
+      renderExperienceSetup();
+    });
+    const doneButton = document.createElement("button");
+    doneButton.type = "button";
+    doneButton.className = "primary-button";
+    doneButton.textContent = "Done";
+    doneButton.addEventListener("click", collapseExperienceSetup);
+    const summaryActions = document.createElement("div");
+    summaryActions.className = "experience-controls";
+    summaryActions.append(editButton, doneButton);
+    summary.append(list, summaryActions);
+    experienceSetupContent.appendChild(summary);
+    return;
+  }
+
+  const question = experienceQuestions[activeExperienceQuestion];
+  const questionCard = document.createElement("div");
+  questionCard.className = "experience-question";
+  const title = document.createElement("h3");
+  title.textContent = question.question;
+  const type = document.createElement("p");
+  type.className = "experience-question-type";
+  type.textContent = question.multiple ? "Select all that apply" : "Select one";
+  const options = document.createElement("div");
+  options.className = "experience-options";
+
+  question.options.forEach((option) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "experience-option";
+    const currentAnswer = experienceAnswers[question.key];
+    const selected = question.multiple ? (currentAnswer || []).includes(option) : currentAnswer === option;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected);
+    button.textContent = option;
+    button.addEventListener("click", () => {
+      if (question.multiple) {
+        const answers = experienceAnswers[question.key] || [];
+        experienceAnswers[question.key] = answers.includes(option)
+          ? answers.filter((answer) => answer !== option)
+          : [...answers, option];
+      } else {
+        experienceAnswers[question.key] = option;
+      }
+      renderExperienceSetup();
+    });
+    options.appendChild(button);
+  });
+
+  const controls = document.createElement("div");
+  controls.className = "experience-controls";
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "secondary-button";
+  back.textContent = "Back";
+  back.disabled = activeExperienceQuestion === 0;
+  back.addEventListener("click", () => { activeExperienceQuestion -= 1; renderExperienceSetup(); });
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "primary-button";
+  next.textContent = activeExperienceQuestion === experienceQuestions.length - 1 ? "Save preferences" : "Continue";
+  const answer = experienceAnswers[question.key];
+  next.disabled = !answer || (Array.isArray(answer) && answer.length === 0);
+  next.addEventListener("click", () => {
+    if (activeExperienceQuestion === experienceQuestions.length - 1) experienceSetupComplete = true;
+    else activeExperienceQuestion += 1;
+    renderExperienceSetup();
+  });
+  controls.append(back, next);
+
+  const dots = document.createElement("div");
+  dots.className = "experience-dots";
+  dots.setAttribute("aria-label", "Setup progress");
+  experienceQuestions.forEach((dotQuestion, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "experience-dot";
+    dot.classList.toggle("active", index === activeExperienceQuestion);
+    dot.disabled = index > activeExperienceQuestion;
+    dot.setAttribute("aria-label", `Question ${index + 1}: ${dotQuestion.question}`);
+    dot.addEventListener("click", () => { activeExperienceQuestion = index; renderExperienceSetup(); });
+    dots.appendChild(dot);
+  });
+
+  questionCard.append(title, type, options, controls, dots);
+  experienceSetupContent.appendChild(questionCard);
+}
+
+function expandExperienceSetup() {
+  experienceSetup.hidden = false;
+  experiencePreferencesToggle.setAttribute("aria-expanded", "true");
+  renderExperienceSetup();
+}
+
+function collapseExperienceSetup() {
+  experienceSetup.hidden = true;
+  experiencePreferencesToggle.setAttribute("aria-expanded", "false");
 }
 
 function renderFilingScenario() {
@@ -598,6 +756,13 @@ taxTipsShortcut.addEventListener("click", () => {
   personalizedRecommendations.scrollIntoView({ behavior: "smooth", block: "start" });
 });
 
+experiencePreferencesToggle.addEventListener("click", () => {
+  if (experienceSetup.hidden) expandExperienceSetup();
+  else collapseExperienceSetup();
+});
+
+closeExperienceSetup.addEventListener("click", collapseExperienceSetup);
+
 scenarioButtons.forEach((button) => {
   button.addEventListener("click", () => {
     activeFilingScenario = button.dataset.scenario;
@@ -736,6 +901,7 @@ rewardActions.forEach((button) => {
 
 renderProgressSegments();
 updateDashboardHeader();
+renderExperienceSetup();
 renderFilingScenario();
 renderDocuments();
 updateCarousel();

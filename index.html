@@ -85,9 +85,12 @@
           <section class="filing-progress-card" aria-labelledby="filing-progress-title">
             <div class="filing-progress-sticky">
               <div class="filing-progress-header">
-                <div>
-                  <p class="eyebrow">Filing path progress</p>
-                  <h2 id="filing-progress-title">Taxes in Progress</h2>
+                <div class="filing-title-area">
+                  <div>
+                    <p class="eyebrow">Filing path progress</p>
+                    <h2 id="filing-progress-title">Taxes in Progress</h2>
+                  </div>
+                  <button class="experience-preferences-link" id="experiencePreferencesToggle" type="button" aria-expanded="false" aria-controls="experienceSetup">Experience Preferences</button>
                 </div>
                 <div class="scenario-toggle" aria-label="Choose filing scenario">
                   <button class="scenario-button active" type="button" data-scenario="efile">E-file</button>
@@ -106,6 +109,19 @@
                 <p id="filingCurrentStage">Waiting for Documents</p>
               </div>
             </div>
+
+            <section class="experience-setup-card" id="experienceSetup" hidden aria-labelledby="experience-setup-title">
+              <div class="experience-setup-header">
+                <div>
+                  <p class="eyebrow">Personalize your experience</p>
+                  <h2 id="experience-setup-title">Client Experience Setup</h2>
+                </div>
+                <button class="panel-close-button" id="closeExperienceSetup" type="button">Close</button>
+                <p class="experience-tagline">Setting your filing experience—your way.</p>
+                <p class="experience-intro">Help us understand how you want to communicate, review, and plan this tax season.</p>
+              </div>
+              <div id="experienceSetupContent"></div>
+            </section>
 
             <div class="current-status-card">
               <div>
