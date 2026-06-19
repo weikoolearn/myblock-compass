@@ -673,6 +673,10 @@ function getSectionFromHash() {
     return "To-do List";
   }
 
+  if (window.location.hash === "#message") {
+    return "Message";
+  }
+
   if (window.location.hash === "#documents") {
     return "Document";
   }
@@ -685,11 +689,15 @@ function showPage(sectionName, updateHash = true) {
     ? "Document"
     : sectionName === "To-do List"
       ? "To-do List"
-      : "Dashboard";
+      : sectionName === "Message"
+        ? "Message"
+        : "Dashboard";
 
   if (updateHash) {
     const nextHash = visibleSection === "To-do List"
       ? "#todo-list"
+      : visibleSection === "Message"
+        ? "#message"
       : visibleSection === "Document"
         ? "#documents"
         : "";
