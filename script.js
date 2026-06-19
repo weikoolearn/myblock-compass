@@ -172,6 +172,13 @@ let isCarouselPaused = false;
 let pendingUploadDocument = null;
 let activeDocumentMode = "upload";
 let activeDocumentYear = 2025;
+<<<<<<<<< Temporary merge branch 1
+let pendingTodoRemoval = null;
+=========
+let activeExperienceQuestion = 0;
+let experienceSetupComplete = false;
+const experienceAnswers = {};
+>>>>>>>>> Temporary merge branch 2
 
 const navItems = document.querySelectorAll(".nav-item");
 const pageViews = document.querySelectorAll(".page-view");
@@ -396,6 +403,244 @@ function showPrototypeMessage(button, label) {
   window.setTimeout(() => { button.textContent = original; }, 1200);
 }
 
+<<<<<<<<< Temporary merge branch 1
+function loadSavedTodoItems() {
+  try {
+    const savedItems = JSON.parse(localStorage.getItem(TODO_LIST_STORAGE_KEY));
+    return Array.isArray(savedItems) ? savedItems : [];
+  } catch (error) {
+    localStorage.removeItem(TODO_LIST_STORAGE_KEY);
+    return [];
+  }
+}
+
+function saveTodoItems(todoItems) {
+  localStorage.setItem(TODO_LIST_STORAGE_KEY, JSON.stringify(todoItems));
+}
+
+function syncChecklistSelections(todoItems) {
+  try {
+    const checklistState = JSON.parse(localStorage.getItem(CHECKLIST_STORAGE_KEY));
+
+    if (!checklistState || !Array.isArray(checklistState.selectedItems) || !Array.isArray(checklistState.completedItems)) {
+      return;
+    }
+
+    checklistState.selectedItems = todoItems.map((item) => item.id);
+    checklistState.completedItems = [];
+    checklistState.mode = "selection";
+
+    localStorage.setItem(CHECKLIST_STORAGE_KEY, JSON.stringify(checklistState));
+  } catch (error) {
+    localStorage.removeItem(CHECKLIST_STORAGE_KEY);
+  }
+}
+
+function updateTodoSummary(todoItems) {
+  const totalTasks = todoItems.length;
+  const completedTasks = todoItems.filter((item) => item.completed).length;
+  const remainingTasks = Math.max(totalTasks - completedTasks, 0);
+
+  todoProgressSummary.textContent = `${completedTasks} of ${totalTasks}`;
+  todoRemainingSummary.textContent = remainingTasks === 1 ? "1 remaining" : `${remainingTasks} remaining`;
+}
+
+function renderTodoList() {
+  const todoItems = loadSavedTodoItems();
+  todoListItems.innerHTML = "";
+
+  if (todoItems.length === 0) {
+    const emptyItem = document.createElement("li");
+    emptyItem.className = "checklist-empty-state";
+    emptyItem.textContent = "No saved checklist tasks yet. Save changes from the Checklist page to add tasks here.";
+    todoListItems.appendChild(emptyItem);
+    updateTodoSummary(todoItems);
+    return;
+  }
+
+  todoItems.forEach((item, index) => {
+    const listItem = document.createElement("li");
+    listItem.className = "task-checklist-item";
+
+    const checkbox = document.createElement("input");
+    checkbox.className = "checklist-checkbox";
+    checkbox.type = "checkbox";
+    checkbox.id = `todo-item-${index}`;
+    checkbox.checked = Boolean(item.completed);
+    checkbox.addEventListener("change", () => {
+      if (!checkbox.checked) {
+        item.completed = false;
+        saveTodoItems(todoItems);
+        updateTodoSummary(todoItems);
+        return;
+      }
+
+      pendingTodoRemoval = {
+        itemId: item.id,
+        checkbox
+      };
+
+      if (typeof taskConfirmationModal.showModal === "function") {
+        taskConfirmationModal.showModal();
+      } else {
+        taskConfirmationModal.setAttribute("open", "");
+      }
+    });
+
+    const copyWrap = document.createElement("label");
+    copyWrap.className = "task-checklist-copy";
+    copyWrap.setAttribute("for", checkbox.id);
+
+    const title = document.createElement("strong");
+    title.textContent = item.label;
+
+    const context = document.createElement("span");
+    context.className = "task-context";
+    context.textContent = item.subgroup ? `${item.group} • ${item.subgroup}` : item.group;
+
+    const link = document.createElement("a");
+    link.className = "task-link";
+    link.href = "#";
+    link.textContent = "Open task link";
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+    });
+
+    copyWrap.append(title, context, link);
+    listItem.append(checkbox, copyWrap);
+    todoListItems.appendChild(listItem);
+  });
+
+  updateTodoSummary(todoItems);
+=========
+function renderExperienceSetup() {
+  experienceSetupContent.innerHTML = "";
+
+  if (experienceSetupComplete) {
+    const summary = document.createElement("div");
+    summary.className = "experience-summary";
+    summary.innerHTML = "<h3>Preferences saved</h3><p>Your filing experience is ready.</p>";
+
+    const list = document.createElement("dl");
+    list.className = "preference-summary-list";
+    experienceQuestions.forEach((question) => {
+      const row = document.createElement("div");
+      const term = document.createElement("dt");
+      const description = document.createElement("dd");
+      term.textContent = question.label;
+      const answer = experienceAnswers[question.key];
+      description.textContent = Array.isArray(answer) ? answer.join(", ") : answer;
+      row.append(term, description);
+      list.appendChild(row);
+    });
+
+    const editButton = document.createElement("button");
+    editButton.type = "button";
+    editButton.className = "secondary-button edit-preferences";
+    editButton.textContent = "Edit preferences";
+    editButton.addEventListener("click", () => {
+      activeExperienceQuestion = 0;
+      experienceSetupComplete = false;
+      renderExperienceSetup();
+    });
+    const doneButton = document.createElement("button");
+    doneButton.type = "button";
+    doneButton.className = "primary-button";
+    doneButton.textContent = "Done";
+    doneButton.addEventListener("click", collapseExperienceSetup);
+    const summaryActions = document.createElement("div");
+    summaryActions.className = "experience-controls";
+    summaryActions.append(editButton, doneButton);
+    summary.append(list, summaryActions);
+    experienceSetupContent.appendChild(summary);
+    return;
+  }
+
+  const question = experienceQuestions[activeExperienceQuestion];
+  const questionCard = document.createElement("div");
+  questionCard.className = "experience-question";
+  const title = document.createElement("h3");
+  title.textContent = question.question;
+  const type = document.createElement("p");
+  type.className = "experience-question-type";
+  type.textContent = question.multiple ? "Select all that apply" : "Select one";
+  const options = document.createElement("div");
+  options.className = "experience-options";
+
+  question.options.forEach((option) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "experience-option";
+    const currentAnswer = experienceAnswers[question.key];
+    const selected = question.multiple ? (currentAnswer || []).includes(option) : currentAnswer === option;
+    button.classList.toggle("selected", selected);
+    button.setAttribute("aria-pressed", selected);
+    button.textContent = option;
+    button.addEventListener("click", () => {
+      if (question.multiple) {
+        const answers = experienceAnswers[question.key] || [];
+        experienceAnswers[question.key] = answers.includes(option)
+          ? answers.filter((answer) => answer !== option)
+          : [...answers, option];
+      } else {
+        experienceAnswers[question.key] = option;
+      }
+      renderExperienceSetup();
+    });
+    options.appendChild(button);
+  });
+
+  const controls = document.createElement("div");
+  controls.className = "experience-controls";
+  const back = document.createElement("button");
+  back.type = "button";
+  back.className = "secondary-button";
+  back.textContent = "Back";
+  back.disabled = activeExperienceQuestion === 0;
+  back.addEventListener("click", () => { activeExperienceQuestion -= 1; renderExperienceSetup(); });
+  const next = document.createElement("button");
+  next.type = "button";
+  next.className = "primary-button";
+  next.textContent = activeExperienceQuestion === experienceQuestions.length - 1 ? "Save preferences" : "Continue";
+  const answer = experienceAnswers[question.key];
+  next.disabled = !answer || (Array.isArray(answer) && answer.length === 0);
+  next.addEventListener("click", () => {
+    if (activeExperienceQuestion === experienceQuestions.length - 1) experienceSetupComplete = true;
+    else activeExperienceQuestion += 1;
+    renderExperienceSetup();
+  });
+  controls.append(back, next);
+
+  const dots = document.createElement("div");
+  dots.className = "experience-dots";
+  dots.setAttribute("aria-label", "Setup progress");
+  experienceQuestions.forEach((dotQuestion, index) => {
+    const dot = document.createElement("button");
+    dot.type = "button";
+    dot.className = "experience-dot";
+    dot.classList.toggle("active", index === activeExperienceQuestion);
+    dot.disabled = index > activeExperienceQuestion;
+    dot.setAttribute("aria-label", `Question ${index + 1}: ${dotQuestion.question}`);
+    dot.addEventListener("click", () => { activeExperienceQuestion = index; renderExperienceSetup(); });
+    dots.appendChild(dot);
+  });
+
+  questionCard.append(title, type, options, controls, dots);
+  experienceSetupContent.appendChild(questionCard);
+}
+
+function expandExperienceSetup() {
+  experienceSetup.hidden = false;
+  experiencePreferencesToggle.setAttribute("aria-expanded", "true");
+  renderExperienceSetup();
+}
+
+function collapseExperienceSetup() {
+  experienceSetup.hidden = true;
+  experiencePreferencesToggle.setAttribute("aria-expanded", "false");
+>>>>>>>>> Temporary merge branch 2
+}
+
 function renderFilingScenario() {
   const scenario = filingScenarios[activeFilingScenario];
 
@@ -594,6 +839,10 @@ function getSectionFromHash() {
     return "To-do List";
   }
 
+  if (window.location.hash === "#message") {
+    return "Message";
+  }
+
   if (window.location.hash === "#documents") {
     return "Document";
   }
@@ -606,11 +855,15 @@ function showPage(sectionName, updateHash = true) {
     ? "Document"
     : sectionName === "To-do List"
       ? "To-do List"
-      : "Dashboard";
+      : sectionName === "Message"
+        ? "Message"
+        : "Dashboard";
 
   if (updateHash) {
     const nextHash = visibleSection === "To-do List"
       ? "#todo-list"
+      : visibleSection === "Message"
+        ? "#message"
       : visibleSection === "Document"
         ? "#documents"
         : "";

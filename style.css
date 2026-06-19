@@ -941,6 +941,60 @@ h1 {
   line-height: 1.5;
 }
 
+.message-card {
+  max-width: 720px;
+}
+
+.message-bubble {
+  max-width: 540px;
+  padding: 18px;
+  background: #f8fbf9;
+  border: 1px solid var(--line);
+  border-left: 5px solid var(--green);
+  border-radius: 8px 8px 8px 2px;
+  display: grid;
+  gap: 12px;
+}
+
+.message-label {
+  color: var(--green-dark);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.message-select-wrap {
+  position: relative;
+}
+
+.message-select-wrap::after {
+  content: "▾";
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  color: var(--green-dark);
+  font-size: 14px;
+  pointer-events: none;
+}
+
+.message-topic-select {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 11px 40px 11px 14px;
+  background: #ffffff;
+  color: var(--ink);
+  font: inherit;
+  appearance: none;
+}
+
+.message-topic-select:focus {
+  outline: 2px solid var(--green-soft);
+  outline-offset: 2px;
+  border-color: var(--green);
+}
+
 .required-documents-header {
   display: flex;
   align-items: center;
