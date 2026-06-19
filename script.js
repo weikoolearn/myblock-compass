@@ -110,33 +110,33 @@ const filingScenarios = {
 
 const recommendations = [
   {
-    title: "529 Education Savings Guidance",
-    priority: "High priority",
-    kicker: "Most relevant next step",
-    description: "Explore whether a state-sponsored education savings plan could help you prepare for future school costs while keeping tax benefits in view.",
-    cta: "Learn about 529 plans",
-    points: 75,
-    message: "529 guidance opened. Sarah earned 75 Compass points.",
-    completedText: "Added to plan"
-  },
-  {
-    title: "Mid-Year Tax Checkup",
+    title: "W-4 Adjustment Review",
     priority: "Recommended",
-    kicker: "Timely tax planning",
-    description: "Review withholding, credits, and life changes now so tax season feels less like a surprise and more like a plan.",
-    cta: "Start checkup",
+    kicker: "Tax planning",
+    description: "Review your current withholding and make sure it aligns with your income, family situation, and tax goals to avoid unexpected tax balances or refunds.",
+    cta: "Review W-4",
     points: 50,
-    message: "Mid-year tax checkup added. Sarah earned 50 Compass points.",
+    message: "W-4 adjustment review opened. Sarah earned 50 Compass points.",
     completedText: "Added to plan"
   },
   {
-    title: "Childcare FSA Opportunity",
+    title: "Business Expense Tracking",
     priority: "Worth reviewing",
-    kicker: "Benefits window watch",
-    description: "See whether setting aside pre-tax dollars for eligible childcare expenses could fit your family's benefits enrollment window.",
-    cta: "Review options",
+    kicker: "Business planning",
+    description: "Track deductible business expenses throughout the year to simplify tax preparation and maximize eligible deductions.",
+    cta: "Explore Tracking",
     points: 40,
-    message: "Childcare FSA review started. Sarah earned 40 Compass points.",
+    message: "Business expense tracking opened. Sarah earned 40 Compass points.",
+    completedText: "Added to plan"
+  },
+  {
+    title: "College Savings Planning",
+    priority: "Recommended",
+    kicker: "Education planning",
+    description: "Explore education savings opportunities such as 529 plans and build a strategy for future education expenses.",
+    cta: "Learn More",
+    points: 50,
+    message: "College savings planning opened. Sarah earned 50 Compass points.",
     completedText: "Added to plan"
   }
 ];
@@ -233,6 +233,10 @@ const recommendationIndex = document.querySelector("#recommendationIndex");
 const recommendationProgress = document.querySelector("#recommendationProgress");
 
 function updateRewards() {
+  if (!pointsEarned || !rewardProgress || !milestoneText) {
+    return;
+  }
+
   pointsEarned.textContent = points;
 
   const progress = Math.min((points / NEXT_MILESTONE) * 100, 100);
