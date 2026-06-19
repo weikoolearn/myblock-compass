@@ -1,6 +1,7 @@
 const STARTING_POINTS = 420;
 const NEXT_MILESTONE = 500;
 const ROTATION_INTERVAL = 10000;
+const LIFE_EVENT_ROTATION_INTERVAL = 4500;
 const TODO_LIST_STORAGE_KEY = "myblockTodoItems";
 const CHECKLIST_STORAGE_KEY = "myblockChecklistState";
 
@@ -65,6 +66,29 @@ const experienceQuestions = [
   {
     key: "planning", label: "Future planning interest", question: "Would you like help planning beyond this tax return?",
     options: ["Yes, I’d like guidance and ongoing support", "Maybe — open to learning more", "Not at this time"]
+  }
+];
+
+const lifeEvents = [
+  {
+    title: "New Baby?",
+    label: "Family changes",
+    description: "Review credits, dependent updates, and next-step tax planning for a growing family."
+  },
+  {
+    title: "College Savings",
+    label: "Education planning",
+    description: "See how education savings strategies like 529 plans can fit into your longer-term tax picture."
+  },
+  {
+    title: "Retirement",
+    label: "Future planning",
+    description: "Compare retirement contribution opportunities and tax-smart ways to prepare for what comes next."
+  },
+  {
+    title: "Business Owner?",
+    label: "Business planning",
+    description: "Surface deductions, estimated tax steps, and planning moves that matter when you run your own business."
   }
 ];
 
@@ -166,6 +190,9 @@ let activeRecommendation = 0;
 let activeFilingScenario = "efile";
 let showCompletedSteps = false;
 let carouselTimer;
+let activeLifeEvent = 0;
+let lifeEventsTimer;
+let lifeEventsTextAnimationTimer;
 let rotationStartedAt = 0;
 let elapsedBeforePause = 0;
 let isCarouselPaused = false;
@@ -187,6 +214,8 @@ const menuStatus = document.querySelector("#menuStatus");
 const dashboardEyebrow = document.querySelector("#dashboardEyebrow");
 const dashboardWelcome = document.querySelector("#dashboardWelcome");
 const taxTipsShortcut = document.querySelector("#taxTipsShortcut");
+const lifeEventsStatus = document.querySelector("#lifeEventsStatus");
+const lifeEventsLink = document.querySelector("#lifeEventsLink");
 const personalizedRecommendations = document.querySelector("#personalizedRecommendations");
 const experienceSetupContent = document.querySelector("#experienceSetupContent");
 const experienceSetup = document.querySelector("#experienceSetup");
@@ -690,6 +719,49 @@ function getActiveRecommendation() {
   return recommendations[activeRecommendation];
 }
 
+function animateLifeEventsText() {
+  if (!lifeEventsLink) {
+    return;
+  }
+
+  lifeEventsLink.classList.remove("scrolling");
+  clearTimeout(lifeEventsTextAnimationTimer);
+  lifeEventsLink.offsetHeight;
+  lifeEventsLink.classList.add("scrolling");
+  lifeEventsTextAnimationTimer = setTimeout(() => {
+    lifeEventsLink.classList.remove("scrolling");
+  }, 320);
+}
+
+function updateLifeEventsBanner() {
+  if (!lifeEventsStatus || !lifeEventsLink) {
+    return;
+  }
+
+  const activeEvent = lifeEvents[activeLifeEvent];
+  lifeEventsStatus.textContent = `${activeLifeEvent + 1} of ${lifeEvents.length}`;
+  lifeEventsLink.textContent = activeEvent.title;
+}
+
+function showLifeEvent(index) {
+  activeLifeEvent = (index + lifeEvents.length) % lifeEvents.length;
+  updateLifeEventsBanner();
+  animateLifeEventsText();
+}
+
+function stopLifeEventsCarousel() {
+  clearTimeout(lifeEventsTimer);
+  lifeEventsTimer = undefined;
+}
+
+function startLifeEventsCarousel() {
+  stopLifeEventsCarousel();
+  lifeEventsTimer = setTimeout(() => {
+    showLifeEvent(activeLifeEvent + 1);
+    startLifeEventsCarousel();
+  }, LIFE_EVENT_ROTATION_INTERVAL);
+}
+
 function renderProgressSegments() {
   recommendationProgress.innerHTML = "";
   recommendationProgress.style.setProperty("--segment-count", recommendations.length);
@@ -1113,6 +1185,14 @@ rewardActions.forEach((button) => {
   });
 });
 
+updateLifeEventsBanner();
+startLifeEventsCarousel();
+if (lifeEventsLink) {
+  lifeEventsLink.addEventListener("click", () => {
+    showLifeEvent(activeLifeEvent + 1);
+    startLifeEventsCarousel();
+  });
+}
 renderProgressSegments();
 updateDashboardHeader();
 renderExperienceSetup();

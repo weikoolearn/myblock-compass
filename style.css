@@ -264,12 +264,25 @@ p {
 }
 
 .dashboard-header {
+  display: grid;
+  gap: 16px;
   margin-bottom: 22px;
+}
+
+.dashboard-header-copy {
+  min-width: 0;
+}
+
+.dashboard-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 12px;
+  margin-top: 14px;
 }
 
 .tax-tips-shortcut {
   min-height: 44px;
-  margin-top: 14px;
   padding: 10px 16px;
   border: 1px solid var(--green);
   border-radius: 8px;
@@ -282,6 +295,119 @@ p {
 .tax-tips-shortcut:hover,
 .tax-tips-shortcut:focus-visible {
   background: var(--green-soft);
+}
+
+.life-events-banner {
+  position: relative;
+  overflow: hidden;
+  min-height: 44px;
+  padding: 10px 14px;
+  border: 1px solid #0a6a33;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #0b7f3a 0%, #0f9550 55%, #14a95e 100%);
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 6px;
+  align-content: center;
+  flex: 1 1 280px;
+}
+
+.life-events-banner::after {
+  content: "";
+  position: absolute;
+  inset: auto -18px -30px auto;
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 72%);
+  pointer-events: none;
+}
+
+.life-events-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+.life-events-banner-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.life-events-kicker,
+.life-events-status {
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.life-events-kicker {
+  color: rgba(255, 255, 255, 0.86);
+  text-transform: uppercase;
+}
+
+.life-events-status {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  white-space: nowrap;
+}
+
+.life-events-label {
+  display: none;
+}
+
+.life-events-link {
+  justify-self: start;
+  min-height: 24px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #eaf9ef;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  position: relative;
+  z-index: 1;
+}
+
+.life-events-link:hover,
+.life-events-link:focus-visible,
+.life-events-link.active {
+  color: #ffffff;
+}
+
+.life-events-link.active {
+  text-decoration-thickness: 2px;
+}
+
+.life-events-link-main {
+  font-size: 18px;
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+.life-events-link-main.scrolling {
+  animation: lifeEventScroll 280ms ease;
+}
+
+@keyframes lifeEventScroll {
+  from {
+    opacity: 0;
+    transform: translateX(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .experience-setup-card {
@@ -1558,6 +1684,10 @@ h1 {
     font-size: 25px;
   }
 
+  .life-events-banner h2 {
+    font-size: 17px;
+  }
+
   .nav-item {
     font-size: 10px;
   }
@@ -1575,6 +1705,15 @@ h1 {
 
   .dashboard-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .dashboard-header-actions {
+    flex-wrap: nowrap;
+    align-items: stretch;
+  }
+
+  .tax-tips-shortcut {
+    flex: 0 0 auto;
   }
 
   .carousel-banner {
