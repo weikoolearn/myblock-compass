@@ -284,6 +284,74 @@ p {
   background: var(--green-soft);
 }
 
+.experience-setup-card {
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-top: 4px solid var(--green);
+  border-radius: 8px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.experience-setup-card[hidden] { display: none; }
+.filing-title-area { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: start; }
+.experience-preferences-link,
+.panel-close-button {
+  min-height: 36px;
+  padding: 7px 9px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--green-dark);
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+}
+.experience-preferences-link:hover,
+.panel-close-button:hover { background: var(--green-soft); }
+
+.experience-setup-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 5px 10px; margin-bottom: 18px; }
+.experience-setup-header p,
+.experience-setup-header h2 { margin: 0; }
+.experience-setup-header h2 { font-size: 22px; }
+.experience-tagline { grid-column: 1 / -1; color: var(--green-dark); font-weight: 800; }
+.experience-intro { grid-column: 1 / -1; color: var(--muted); font-size: 14px; line-height: 1.45; }
+.experience-question { display: grid; gap: 14px; }
+.experience-question h3 { margin: 0; font-size: 18px; line-height: 1.3; }
+.experience-question-type { margin: -8px 0 0; color: var(--muted); font-size: 12px; font-weight: 700; }
+.experience-options { display: grid; gap: 8px; }
+.experience-option {
+  min-height: 46px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  font-weight: 700;
+}
+.experience-option:hover { border-color: var(--green); background: var(--green-soft); }
+.experience-option.selected { border-color: var(--green); background: var(--green-soft); color: var(--green-dark); box-shadow: inset 4px 0 0 var(--green); }
+.experience-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 2px; }
+.experience-controls .primary-button,
+.experience-controls .secondary-button { margin: 0; }
+.experience-controls button:disabled { cursor: not-allowed; opacity: .5; }
+.experience-dots { display: flex; justify-content: center; gap: 8px; margin-top: 2px; }
+.experience-dot { width: 12px; height: 12px; padding: 0; border: 0; border-radius: 50%; background: #cbd5dd; cursor: pointer; }
+.experience-dot.active { background: var(--green); box-shadow: 0 0 0 3px var(--green-soft); }
+.experience-dot:disabled { cursor: default; opacity: .45; }
+.experience-summary { display: grid; gap: 16px; }
+.experience-summary h3,
+.experience-summary p { margin: 0; }
+.experience-summary > p { color: var(--muted); }
+.preference-summary-list { display: grid; gap: 10px; margin: 0; }
+.preference-summary-list div { display: grid; gap: 3px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.preference-summary-list div:last-child { padding-bottom: 0; border-bottom: 0; }
+.preference-summary-list dt { color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; }
+.preference-summary-list dd { margin: 0; font-weight: 700; line-height: 1.4; }
+.edit-preferences { justify-self: start; width: auto; }
+
 .eyebrow {
   color: var(--green-dark);
   font-size: 12px;

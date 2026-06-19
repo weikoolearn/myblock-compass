@@ -85,9 +85,12 @@
           <section class="filing-progress-card" aria-labelledby="filing-progress-title">
             <div class="filing-progress-sticky">
               <div class="filing-progress-header">
-                <div>
-                  <p class="eyebrow">Filing path progress</p>
-                  <h2 id="filing-progress-title">Taxes in Progress</h2>
+                <div class="filing-title-area">
+                  <div>
+                    <p class="eyebrow">Filing path progress</p>
+                    <h2 id="filing-progress-title">Taxes in Progress</h2>
+                  </div>
+                  <button class="experience-preferences-link" id="experiencePreferencesToggle" type="button" aria-expanded="false" aria-controls="experienceSetup">Experience Preferences</button>
                 </div>
                 <div class="scenario-toggle" aria-label="Choose filing scenario">
                   <button class="scenario-button active" type="button" data-scenario="efile">E-file</button>
@@ -106,6 +109,19 @@
                 <p id="filingCurrentStage">Waiting for Documents</p>
               </div>
             </div>
+
+            <section class="experience-setup-card" id="experienceSetup" hidden aria-labelledby="experience-setup-title">
+              <div class="experience-setup-header">
+                <div>
+                  <p class="eyebrow">Personalize your experience</p>
+                  <h2 id="experience-setup-title">Client Experience Setup</h2>
+                </div>
+                <button class="panel-close-button" id="closeExperienceSetup" type="button">Close</button>
+                <p class="experience-tagline">Setting your filing experience—your way.</p>
+                <p class="experience-intro">Help us understand how you want to communicate, review, and plan this tax season.</p>
+              </div>
+              <div id="experienceSetupContent"></div>
+            </section>
 
             <div class="current-status-card">
               <div>
@@ -148,8 +164,8 @@
 
           <div class="section-heading" id="personalizedRecommendations">
             <div>
-              <p class="eyebrow">Personalized recommendations</p>
-              <h2 id="recommendations-title">Top opportunities for your family</h2>
+              <p class="eyebrow">Current tax year guidance</p>
+              <h2 id="recommendations-title">Personalized Tax Tips</h2>
             </div>
             <span class="freshness">Updated today</span>
           </div>
@@ -175,84 +191,7 @@
             </article>
           </section>
 
-          <section class="action-plan" aria-labelledby="action-plan-title">
-            <div class="section-heading compact">
-              <div>
-                <p class="eyebrow">Action plan</p>
-                <h2 id="action-plan-title">Recommended next actions</h2>
-              </div>
-            </div>
-
-            <div class="action-list">
-              <button class="action-item reward-action" data-points="25" data-message="Action complete: Learn more about 529 plans. 25 points added.">
-                <span class="action-number">1</span>
-                <span>
-                  <strong>Learn more about 529 plans</strong>
-                  <small>Five-minute guide tailored for parents with school-age kids.</small>
-                </span>
-              </button>
-              <button class="action-item reward-action" data-points="30" data-message="Action complete: Schedule a mid-year tax checkup. 30 points added.">
-                <span class="action-number">2</span>
-                <span>
-                  <strong>Schedule a mid-year tax checkup</strong>
-                  <small>Pick a time with an H&R Block tax pro.</small>
-                </span>
-              </button>
-              <button class="action-item reward-action" data-points="20" data-message="Action complete: Review childcare FSA options. 20 points added.">
-                <span class="action-number">3</span>
-                <span>
-                  <strong>Review childcare FSA options</strong>
-                  <small>Understand what to ask before benefits enrollment.</small>
-                </span>
-              </button>
-            </div>
-          </section>
         </section>
-
-        <aside class="insight-column" aria-label="Insights and rewards">
-          <section class="rewards-card">
-            <p class="eyebrow">Rewards summary</p>
-            <div class="points-total">
-              <span id="pointsEarned">420</span>
-              <small>points earned</small>
-            </div>
-            <div class="reward-detail">
-              <span>Current level</span>
-              <strong>Family Planner</strong>
-            </div>
-            <div class="progress-track" aria-label="Progress to next milestone">
-              <div id="rewardProgress" class="progress-fill"></div>
-            </div>
-            <p id="milestoneText" class="milestone">80 points to Tax Season Ready</p>
-          </section>
-
-          <section class="questions-card">
-            <p class="eyebrow">Sarah's key questions</p>
-            <h2>Simple answers first</h2>
-
-            <div class="question-block">
-              <h3>Is this important for me?</h3>
-              <p>Yes. These recommendations connect to Sarah's children, income, and likely yearly tax decisions.</p>
-            </div>
-
-            <div class="question-block">
-              <h3>Do I need to do anything?</h3>
-              <p>Start with one action this week: education savings, withholding, or childcare benefits.</p>
-            </div>
-
-            <div class="question-block">
-              <h3>Who can help me?</h3>
-              <p>An H&R Block tax pro can explain the tradeoffs and help Sarah choose the next step.</p>
-            </div>
-          </section>
-
-          <section class="advisor-card">
-            <p class="advisor-label">Available now</p>
-            <h2>Talk to a tax pro</h2>
-            <p>Get a simple answer before small questions become tax-season surprises.</p>
-            <button class="secondary-button">Find help</button>
-          </section>
-        </aside>
       </div>
       </div>
 
